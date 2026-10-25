@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "node scripts/serve.mjs",
     "start": "node scripts/serve.mjs",
-    "check": "node --check site/scripts/main.js && node --check site/scripts/forms.js && node --check scripts/serve.mjs && node --check backend/server.mjs && node --check backend/leads.mjs && node --check backend/bitrix.mjs && node --check backend/validation.mjs && node --check backend/preview.mjs && node --check backend/inspect-bitrix.mjs",
+    "check": "node --check site/scripts/main.js && node --check site/scripts/effects.js && node --check site/scripts/forms.js && node --check site/design-system/docs.js && node --check scripts/serve.mjs && node --check backend/server.mjs && node --check backend/leads.mjs && node --check backend/bitrix.mjs && node --check backend/validation.mjs && node --check backend/preview.mjs && node --check backend/inspect-bitrix.mjs",
     "dev:backend": "node backend/preview.mjs",
     "start:backend": "node --env-file-if-exists=.env backend/server.mjs",
     "test": "node --test backend/test/*.test.mjs",
