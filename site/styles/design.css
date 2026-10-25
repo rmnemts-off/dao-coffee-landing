@@ -519,7 +519,9 @@ a:hover>.trail-link::after,a:focus-visible>.trail-link::after,
   .editorial-grid,.product-reverse .editorial-grid{grid-template-columns:minmax(0,1fr);grid-template-rows:none;grid-template-areas:"heading" "visual" "copy" "lineup";row-gap:clamp(20px,3vw,32px)}
   .section-heading{margin-bottom:0}
   :root{--fs-hero:clamp(3.25rem,1.6rem + 6vw,5.5rem)}
+  .hero{align-items:start;padding-top:24px}
   .hero-content{grid-template-columns:minmax(0,1fr);gap:clamp(20px,4vw,40px)}
+  .hero-description{max-width:none}
   .hero-showcase{justify-self:center;max-width:36rem}
   .equipment-layout{grid-template-columns:minmax(0,1fr)}
   .coffee-stack{--main-h:clamp(13rem,56vw,24rem)}
@@ -529,6 +531,8 @@ a:hover>.trail-link::after,a:focus-visible>.trail-link::after,
   .section-wendougee,.section-linkbar{--fit-w:92%;--fit-h:none}
   .section-water{--fit-w:84%;--fit-h:clamp(13rem,58vw,24rem)}
   .product-copy{max-width:none}
+  .section-summary{max-width:none;text-wrap:wrap}
+  .product-facts,.equipment-heading>p{max-width:none}
   .editorial-grid>.lineup{margin-top:8px}
   .models-wendougee{grid-template-columns:repeat(6,minmax(0,1fr))}.models-wendougee .model{grid-column:span 2}.models-wendougee .model:nth-last-child(-n+2){grid-column:span 3}
   .contact-layout{grid-template-columns:minmax(0,1fr);gap:clamp(36px,6vw,56px)}
@@ -538,7 +542,6 @@ a:hover>.trail-link::after,a:focus-visible>.trail-link::after,
 @media(max-width:640px){
   .hero{--topo-rest:.34}
   .hero h1{line-height:1.03}
-  .hero-description{max-width:28ch}
   .cta{width:min(100%,22rem)}
   .models{gap:8px}
   .model{padding:12px 10px}
