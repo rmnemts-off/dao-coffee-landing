@@ -85,3 +85,19 @@ systemctl list-timers dao-certbot-renew.timer
 **Откат после успешной активации отличается от возврата bootstrap:** восстановить проверенный релиз и старый IP-origin в env, но установить `dao-domain-rollback.conf` из bundle. Этот fallback сохраняет оба сертификата: домен и aliases через HTTPS перенаправляют на IP, а IP снова отдаёт сайт и API. Проверить `nginx -t`, `/readyz`, запустить/reload службы и проверить оба HTTPS адреса. Обратимые переходы IP → домен и домен → IP используют `307` с `Cache-Control: no-store`: постоянный закешированный redirect мог бы вызвать цикл при откате. HTTP-01 остаётся доступным для обоих lineage. Возврат одного bootstrap после активации отключил бы доменный TLS, поэтому так не откатывать. DNS откатывается отдельно с учётом кешей; сертификаты не удалять.
 
 Основания: [Certbot webroot и несколько имён](https://eff-certbot.readthedocs.io/en/stable/using.html#webroot), [Let’s Encrypt HTTP-01 и порт 80](https://letsencrypt.org/docs/challenge-types/#http-01-challenge), [проверка CAA](https://letsencrypt.org/docs/caa/).
+
+## Предварительный сертификат через DNS-01
+
+Если A-запись пока должна остаться на прежнем хостинге, первичный сертификат можно получить через manual DNS-01 для обоих имён. Оператор выдаёт TXT значения текущего ACME order; владелец публикует их без смены адреса сайта. Проверять точное совпадение на всех авторитетных NS и внешних резолверах до продолжения Certbot. Одноразовый auth hook ожидает подтверждения с ограниченным временем; это не автоматическая интеграция с DNS-провайдером.
+
+После получения проверить доверенную цепочку и SAN, затем применить шаг 4 выше: сертификат позволяет заранее проверить новый VPS через `curl --resolve coffee.example:443:203.0.113.10 https://coffee.example/`, не отключая проверку TLS. Доменный vhost и APP_ORIGIN должны быть полностью готовы до смены A.
+
+Manual DNS-01 сам по себе **не обеспечивает автопродление**. После переключения A/CNAME на VPS и успешного HTTP-01 preflight перевести существующий lineage на webroot поддерживаемой командой, которая сначала выполняет пробную проверку:
+
+```sh
+/opt/dao-certbot/bin/certbot reconfigure --non-interactive \
+  --cert-name dao-domain --webroot --webroot-path /var/lib/letsencrypt \
+  --preferred-challenges http --run-deploy-hooks
+```
+
+Затем проверить сохранённый authenticator `webroot` и единый `dao-certbot-renew.timer`; не оставлять ручной hook единственным способом будущего продления. TXT текущей проверки можно удалить после успешного завершения DNS-01.
