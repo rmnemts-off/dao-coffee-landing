@@ -3,43 +3,60 @@
 // (the scratch-off cover draws on its own canvas). Hover effects stay off on
 // touch screens and with reduced motion. No scroll listeners.
 (() => {
-  const finePointer = matchMedia('(hover: hover) and (pointer: fine)');
+  const finePointer = matchMedia('(min-width: 961px) and (hover: hover) and (pointer: fine)');
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const root = document.documentElement;
   // The design system page can switch effects off to preview the static state.
   const canHover = () => finePointer.matches && !reduced.matches && !root.hasAttribute('data-motion-off');
 
-  root.classList.toggle('js-motion', !reduced.matches);
-  reduced.addEventListener('change', () => root.classList.toggle('js-motion', !reduced.matches));
-
   // Pointer position as --mx/--my, one write per frame: the spotlight inside
   // buttons and model cards, and the pattern lit around the cursor.
-  document.querySelectorAll('[data-spotlight], .topo[data-topo-lit]').forEach(element => {
-    let frame = 0;
-    let pointer;
-    const paint = () => {
-      frame = 0;
-      const box = element.getBoundingClientRect();
-      element.style.setProperty('--mx', `${pointer.clientX - box.left}px`);
-      element.style.setProperty('--my', `${pointer.clientY - box.top}px`);
-      element.setAttribute('data-lit', '');
-    };
-    element.addEventListener('pointermove', event => {
-      if ((event.pointerType !== 'mouse' && event.pointerType !== 'pen') || !canHover()) return;
-      pointer = event;
-      frame ||= requestAnimationFrame(paint);
+  const hoverTargets = Array.from(document.querySelectorAll('[data-spotlight], .topo[data-topo-lit]'));
+  let hoverCleanup = [];
+  function syncHover() {
+    hoverCleanup.forEach(cleanup => cleanup());
+    hoverCleanup = [];
+    root.classList.toggle('js-motion', finePointer.matches && !reduced.matches);
+    if (!finePointer.matches || reduced.matches) return;
+    hoverTargets.forEach(element => {
+      let frame = 0;
+      let pointer;
+      const paint = () => {
+        frame = 0;
+        const box = element.getBoundingClientRect();
+        element.style.setProperty('--mx', `${pointer.clientX - box.left}px`);
+        element.style.setProperty('--my', `${pointer.clientY - box.top}px`);
+        element.setAttribute('data-lit', '');
+      };
+      const move = event => {
+        if ((event.pointerType !== 'mouse' && event.pointerType !== 'pen') || !canHover()) return;
+        pointer = event;
+        frame ||= requestAnimationFrame(paint);
+      };
+      const leave = () => {
+        cancelAnimationFrame(frame);
+        frame = 0;
+        element.removeAttribute('data-lit');
+        element.style.removeProperty('--mx');
+        element.style.removeProperty('--my');
+      };
+      element.addEventListener('pointermove', move);
+      element.addEventListener('pointerleave', leave);
+      hoverCleanup.push(() => {
+        element.removeEventListener('pointermove', move);
+        element.removeEventListener('pointerleave', leave);
+        leave();
+      });
     });
-    element.addEventListener('pointerleave', () => {
-      cancelAnimationFrame(frame);
-      frame = 0;
-      element.removeAttribute('data-lit');
-    });
-  });
+  }
+  syncHover();
+  finePointer.addEventListener('change', syncHover);
+  reduced.addEventListener('change', syncHover);
 
   // Runs `onSeen` once per element when it scrolls into view; at once without
   // an observer or with reduced motion.
   const whenSeen = (elements, onSeen, threshold) => {
-    if (!('IntersectionObserver' in window) || reduced.matches) return elements.forEach(onSeen);
+    if (!('IntersectionObserver' in window) || !canHover()) return elements.forEach(onSeen);
     const observer = new IntersectionObserver(entries => {
       for (const entry of entries) {
         if (!entry.isIntersecting) continue;
@@ -67,10 +84,12 @@
   // visitor rubs away (mouse held down, pen or finger). Without JS, or once
   // half of it is gone, the photo underneath is simply visible. A keyboard
   // user gets a button that removes the layer.
+  const scratchFigures = canHover() ? Array.from(document.querySelectorAll('[data-scratch]')) : [];
+  if (!scratchFigures.length) return;
   const contours = new Image();
   contours.src = '/assets/pattern/topo-portrait.svg';
   const coarse = matchMedia('(pointer: coarse)');
-  document.querySelectorAll('[data-scratch]').forEach(figure => {
+  scratchFigures.forEach(figure => {
     const canvas = document.createElement('canvas');
     canvas.className = 'scratch-cover';
     canvas.setAttribute('aria-hidden', 'true');

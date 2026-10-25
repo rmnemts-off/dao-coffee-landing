@@ -31,7 +31,15 @@ const server = http.createServer(async (request, response) => {
     });
     response.end(request.method === 'HEAD' ? undefined : contents);
   } catch {
-    response.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }).end('Страница не найдена');
+    const errorPage = await readFile(path.join(root, '404.html')).catch(() => null);
+    const contents = errorPage ?? Buffer.from('Страница не найдена');
+    response.writeHead(404, {
+      'Content-Type': errorPage ? 'text/html; charset=utf-8' : 'text/plain; charset=utf-8',
+      'Content-Length': contents.length,
+      'X-Content-Type-Options': 'nosniff',
+      'Cache-Control': 'no-cache',
+    });
+    response.end(request.method === 'HEAD' ? undefined : contents);
   }
 });
 server.listen(port, '127.0.0.1', () => console.log(`Local: http://localhost:${port}/`));
