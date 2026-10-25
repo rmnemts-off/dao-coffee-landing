@@ -11,6 +11,7 @@ for port in 3000 9090 9100; do
 done
 curl --fail --silent --show-error --max-time 10 http://localhost:3000/api/health | python3 -c 'import json,sys; assert json.load(sys.stdin).get("database") == "ok"'
 curl --fail --silent --show-error --max-time 10 http://127.0.0.1:9090/-/ready > /dev/null
+curl --fail --silent --show-error --max-time 10 http://127.0.0.1:9090/api/v1/status/flags | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["status"] == "success"; f=d["data"]; assert f.get("web.enable-admin-api") == "false" and f.get("web.enable-lifecycle") == "false", "Prometheus administration endpoints must stay disabled"'
 curl --fail --silent --show-error --max-time 10 'http://127.0.0.1:9090/api/v1/query?query=up%7Bjob%3D%22node%22%7D' | python3 -c 'import json,sys; d=json.load(sys.stdin); r=d["data"]["result"]; assert d["status"] == "success" and len(r)==1 and r[0]["value"][1]=="1", "node scrape not ready; wait 30 seconds and retry"'
 code=$(curl --silent --show-error --max-time 10 -o /dev/null -w '%{http_code}' http://localhost:3000/api/search)
 [[ $code == 401 ]] || { printf 'Grafana API unexpectedly allowed an anonymous request (HTTP %s).\n' "$code" >&2; exit 1; }
