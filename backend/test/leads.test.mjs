@@ -125,13 +125,13 @@ test('uncertain delivery is remembered, and dedup does not mix brands or models'
   assert.equal(calls, 4);
 });
 
-test('rate windows, bounded memory and upstream retry_after are enforced', async () => {
+test('ingress windows, bounded memory and upstream retry_after are enforced', async () => {
   let clock = 0;
   let calls = 0;
   const service = createLeadService({ now: () => clock, perIpLimit: 2, globalLimit: 3,
     send: async () => { calls++; return { kind: 'rejected', retryAfter: 60 }; } });
   assert.equal(service.admit('a'), true); assert.equal(service.admit('a'), true); assert.equal(service.admit('a'), false);
-  assert.equal(service.admit('b'), true); assert.equal(service.admit('c'), false);
+  assert.equal(service.admit('b'), true); assert.equal(service.admit('c'), true);
   assert.equal((await service.submit(valid())).status, 502);
   assert.equal((await service.submit(valid({ comment: 'different' }))).status, 503);
   assert.equal(calls, 1);
@@ -143,4 +143,60 @@ test('rate windows, bounded memory and upstream retry_after are enforced', async
   assert.equal((await bounded.submit(valid())).status, 200);
   assert.equal((await bounded.submit(valid({ comment: 'new' }))).status, 503);
   assert.equal((await bounded.submit(valid())).status, 200);
+});
+
+test('only new validated deliveries consume the global budget, including concurrent reservations', async () => {
+  let clock = 0;
+  let calls = 0;
+  let complete;
+  const service = createLeadService({ now: () => clock, globalLimit: 1, send: () => {
+    calls++;
+    return new Promise(resolve => { complete = resolve; });
+  } });
+  for (let i = 0; i < 40; i++) {
+    assert.equal(service.admit(`client-${i}`), true);
+    assert.equal((await service.submit(valid({ consent: false }))).status, 400);
+  }
+  const first = service.submit(valid());
+  const duplicate = service.submit(valid({ source: 'hero-modal' }));
+  assert.equal((await service.submit(valid({ comment: 'another delivery' }))).status, 429);
+  assert.equal(calls, 1);
+  complete({ kind: 'delivered' });
+  const delivered = await first;
+  assert.deepEqual(await duplicate, delivered);
+  assert.deepEqual(await service.submit(valid()), delivered);
+  assert.equal(calls, 1);
+  clock = 60_001;
+  // A cache hit in the new window must still leave its one send slot available.
+  assert.deepEqual(await service.submit(valid()), delivered);
+  const next = service.submit(valid({ comment: 'another delivery' }));
+  await Promise.resolve();
+  assert.equal(calls, 2);
+  complete({ kind: 'delivered' });
+  assert.equal((await next).status, 200);
+});
+
+test('delivery events contain only safe fields and are emitted once for each actual attempt', async () => {
+  let clock = 100;
+  const events = [];
+  const service = createLeadService({ now: () => clock, onDelivery: event => events.push(event), send: async () => {
+    clock = 125;
+    return { kind: 'delivered', description: 'private upstream data' };
+  } });
+  const response = await service.submit(valid({ comment: 'private customer text' }));
+  await service.submit(valid({ comment: 'private customer text', source: 'hero-modal' }));
+  assert.deepEqual(events, [{ requestId: response.body.requestId, outcome: 'delivered', durationMs: 25 }]);
+
+  const unknownEvents = [];
+  const unknown = createLeadService({ onDelivery: event => unknownEvents.push(event), send: async () => ({ kind: 'private unexpected error' }) });
+  assert.equal((await unknown.submit(valid())).body.code, 'DELIVERY_UNCERTAIN');
+  assert.equal(unknownEvents[0].outcome, 'uncertain');
+  assert.deepEqual(Object.keys(unknownEvents[0]).sort(), ['durationMs', 'outcome', 'requestId']);
+});
+
+test('synchronous and asynchronous logging failures never change delivery success', async () => {
+  for (const onDelivery of [() => { throw new Error('sink failed'); }, async () => { throw new Error('sink failed'); }]) {
+    const service = createLeadService({ onDelivery, send: async () => ({ kind: 'delivered' }) });
+    assert.equal((await service.submit(valid())).status, 200);
+  }
 });

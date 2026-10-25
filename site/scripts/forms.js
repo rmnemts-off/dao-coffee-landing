@@ -344,7 +344,7 @@
       deliveries.set(context, state);
       for (const target of forms) if (target.dataset.context === context) renderDelivery(target);
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 12_000);
+      const timer = setTimeout(() => controller.abort(), 20_000);
       let fieldErrors;
       try {
         const response = await fetch('/api/leads', {

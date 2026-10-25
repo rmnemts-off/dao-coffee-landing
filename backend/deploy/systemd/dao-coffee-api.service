@@ -1,0 +1,54 @@
+[Unit]
+Description=DAO COFFEE lead delivery API
+Wants=network-online.target
+After=network-online.target
+StartLimitIntervalSec=60s
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=dao-coffee
+Group=dao-coffee
+WorkingDirectory=/srv/dao-coffee/current
+Environment=NODE_ENV=production HOST=127.0.0.1 PORT=4322 TRUST_LOOPBACK_PROXY=1
+EnvironmentFile=/etc/dao-coffee/api.env
+# Fail closed if an EnvironmentFile override exposes the API or changes runtime.
+ExecStartPre=/usr/bin/node --eval "if (process.versions.node.split('.')[0] !== '24' || process.env.NODE_ENV !== 'production' || process.env.HOST !== '127.0.0.1' || process.env.PORT !== '4322' || process.env.TRUST_LOOPBACK_PROXY !== '1') { console.error('DAO API requires Node 24 and loopback production settings'); process.exit(1); }"
+ExecStart=/usr/bin/node backend/server.mjs
+Restart=on-failure
+RestartSec=5s
+KillSignal=SIGTERM
+KillMode=control-group
+# Node drains requests and has its own 20-second hard stop; allow extra time.
+TimeoutStopSec=30s
+
+NoNewPrivileges=yes
+UMask=0077
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+RestrictSUIDSGID=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+LockPersonality=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+SystemCallArchitectures=native
+# Node/V8 needs executable JIT memory: do not add MemoryDenyWriteExecute=yes.
+LimitCORE=0
+LimitNOFILE=4096
+TasksMax=64
+MemoryMax=512M
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=dao-coffee-api
+
+[Install]
+WantedBy=multi-user.target

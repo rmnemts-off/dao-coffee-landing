@@ -11,7 +11,7 @@ async function start(t, options = {}) {
   t.after(() => new Promise(resolve => { server.closeAllConnections(); server.close(resolve); }));
   const origin = `http://127.0.0.1:${server.address().port}`;
   const post = (body = lead, headers = {}) => fetch(`${origin}/api/leads`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...headers }, body: JSON.stringify(body) });
-  return { origin, post };
+  return { origin, post, server };
 }
 
 test('POST contract, no-store, method restriction, health and secret paths', async t => {
@@ -88,4 +88,100 @@ test('delivery failures return safe JSON; unconfigured server never reports succ
     assert.equal(response.status, status);
     assert.deepEqual(await response.json(), { ok: false, code });
   }
+});
+
+test('invalid traffic from separate clients does not exhaust the global delivery budget', async t => {
+  let calls = 0;
+  const { post } = await start(t, {
+    env: { APP_ORIGIN: 'https://dao.example', TRUST_LOOPBACK_PROXY: '1' },
+    serviceOptions: { perIpLimit: 1, globalLimit: 1 },
+    send: async () => { calls++; return { kind: 'delivered' }; },
+  });
+  for (let i = 1; i <= 35; i++) {
+    const headers = { 'X-Real-IP': `192.0.2.${i}` };
+    if (i % 2) headers.Origin = 'https://other.example';
+    assert.equal((await post({ ...lead, consent: false }, headers)).status, i % 2 ? 403 : 400);
+  }
+  const first = await post(lead, { 'X-Real-IP': '192.0.2.100' });
+  assert.equal(first.status, 200);
+  const duplicate = await post(lead, { 'X-Real-IP': '192.0.2.101' });
+  assert.deepEqual(await duplicate.json(), await first.json());
+  assert.equal((await post({ ...lead, comment: 'new' }, { 'X-Real-IP': '192.0.2.102' })).status, 429);
+  assert.equal(calls, 1);
+});
+
+test('readiness checks only local configuration and draining, without a Telegram request', async t => {
+  const configured = { NODE_ENV: 'production', APP_ORIGIN: 'https://dao.example', TELEGRAM_BOT_TOKEN: '1:mock-token', TELEGRAM_CHAT_ID: '-123' };
+  for (const env of [{}, { ...configured, TELEGRAM_BOT_TOKEN: 'invalid' }, { ...configured, APP_ORIGIN: '' }, { ...configured, APP_ORIGIN: 'http://dao.example' }, configured]) {
+    // No injected sender: only configuration is checked, never sendMessage.
+    const { server, origin } = await start(t, { env, send: undefined });
+    const ready = await fetch(`${origin}/readyz`);
+    assert.equal(ready.status, env === configured ? 200 : 503);
+    assert.equal(ready.headers.get('cache-control'), 'no-store');
+    assert.deepEqual(await ready.json(), env === configured ? { ok: true } : { ok: false, code: 'NOT_READY' });
+    server.beginDrain();
+    assert.equal((await fetch(`${origin}/readyz`)).status, 503);
+    assert.equal((await fetch(`${origin}/healthz`)).status, 200);
+  }
+});
+
+test('draining rejects new deliveries while an admitted delivery finishes', async t => {
+  let complete;
+  let started;
+  const sending = new Promise(resolve => { started = resolve; });
+  const { server, origin, post } = await start(t, { send: () => {
+    started();
+    return new Promise(resolve => { complete = resolve; });
+  } });
+  const pending = post();
+  await sending;
+  server.beginDrain();
+  assert.equal((await fetch(`${origin}/readyz`)).status, 503);
+  const rejected = await post({ ...lead, comment: 'new' });
+  assert.equal(rejected.status, 503);
+  assert.equal(rejected.headers.get('connection'), 'close');
+  const stopped = server.shutdown();
+  assert.equal(server.shutdown(), stopped);
+  complete({ kind: 'delivered' });
+  assert.equal((await pending).status, 200);
+  assert.equal(await stopped, true);
+});
+
+test('shutdown waits for Telegram after the client disconnects and HTTP server closes', async t => {
+  let complete;
+  let started;
+  const sending = new Promise(resolve => { started = resolve; });
+  const { server, origin } = await start(t, { send: () => {
+    started();
+    return new Promise(resolve => { complete = resolve; });
+  } });
+  const req = http.request(`${origin}/api/leads`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+  req.on('error', () => {});
+  req.end(JSON.stringify(lead));
+  await sending;
+  const disconnected = new Promise(resolve => req.once('close', resolve));
+  req.destroy();
+  await disconnected;
+  const closed = once(server, 'close');
+  let settled = false;
+  const stopped = server.shutdown().then(result => { settled = true; return result; });
+  await closed;
+  assert.equal(settled, false, 'closing the HTTP listener must not abandon an outbound send');
+  complete({ kind: 'delivered' });
+  assert.equal(await stopped, true);
+});
+
+test('shutdown deadline ends the drain when a handler never settles', async t => {
+  let complete;
+  let started;
+  const sending = new Promise(resolve => { started = resolve; });
+  const { server, post } = await start(t, { send: () => {
+    started();
+    return new Promise(resolve => { complete = resolve; });
+  } });
+  const pending = post().catch(() => null);
+  await sending;
+  assert.equal(await server.shutdown({ timeoutMs: 20 }), false);
+  assert.equal(await pending, null);
+  complete({ kind: 'delivered' });
 });

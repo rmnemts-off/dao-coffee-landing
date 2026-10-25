@@ -1,0 +1,47 @@
+# Replace __DAO_DOMAIN__ with one confirmed canonical public DNS name.
+# Requires the certificate already issued by Certbot's webroot authenticator.
+# This REPLACES the bootstrap server file.
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    server_name _;
+    include /etc/nginx/snippets/dao-server-defaults.conf;
+    return 444;
+}
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name __DAO_DOMAIN__;
+    include /etc/nginx/snippets/dao-server-defaults.conf;
+    include /etc/nginx/snippets/dao-acme.conf;
+    include /etc/nginx/snippets/dao-private-locations.conf;
+    location / {
+        # Fixed destination avoids constructing redirects from an untrusted Host.
+        return 308 https://__DAO_DOMAIN__$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl default_server;
+    listen [::]:443 ssl default_server;
+    server_name _;
+    include /etc/nginx/snippets/dao-server-defaults.conf;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_reject_handshake on;
+    return 444;
+}
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    server_name __DAO_DOMAIN__;
+    include /etc/nginx/snippets/dao-server-defaults.conf;
+    ssl_certificate /etc/letsencrypt/live/__DAO_DOMAIN__/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/__DAO_DOMAIN__/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_session_cache shared:DAO_TLS:10m;
+    ssl_session_timeout 1d;
+    ssl_session_tickets off;
+    include /etc/nginx/snippets/dao-site.conf;
+}

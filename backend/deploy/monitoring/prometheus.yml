@@ -1,0 +1,17 @@
+global:
+  scrape_interval: 30s
+  scrape_timeout: 5s
+  evaluation_interval: 1m
+
+# Host metrics only. No API requests, logs, Telegram data or remote_write.
+scrape_configs:
+  - job_name: node
+    sample_limit: 3000
+    static_configs:
+      - targets: ['127.0.0.1:9100']
+        labels:
+          host: dao-vps
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'node_cpu_seconds_total|node_memory_(MemAvailable|MemTotal|SwapFree|SwapTotal)_bytes|node_load(1|5|15)|node_filesystem_(avail|size)_bytes|node_filesystem_readonly|node_network_(receive|transmit)_bytes_total|node_boot_time_seconds|node_time_seconds|node_exporter_build_info|node_scrape_collector_success'
+        action: keep

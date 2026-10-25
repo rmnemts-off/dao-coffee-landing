@@ -41,19 +41,38 @@ function readBody(request, maxBytes, timeoutMs) {
   });
 }
 
-export function createServer({ env = process.env, send = createTelegramSender({ token: env.TELEGRAM_BOT_TOKEN, chatId: env.TELEGRAM_CHAT_ID }),
+export function createServer({ env = process.env, send,
   serviceOptions = {}, maxBytes = 8192, bodyTimeoutMs = 5000, serveStatic } = {}) {
-  const service = createLeadService({ ...serviceOptions, send });
+  const configuredSender = /^\d+:[\w-]+$/.test(env.TELEGRAM_BOT_TOKEN || '') && /^(?:-?\d+|@[A-Za-z][A-Za-z0-9_]{4,})$/.test(env.TELEGRAM_CHAT_ID || '');
+  const service = createLeadService({ ...serviceOptions, send: send ?? createTelegramSender({ token: env.TELEGRAM_BOT_TOKEN, chatId: env.TELEGRAM_CHAT_ID }) });
   const appOrigin = env.APP_ORIGIN ? new URL(env.APP_ORIGIN).origin : null;
+  const configured = (typeof send === 'function' || configuredSender) && (env.NODE_ENV !== 'production' || appOrigin?.startsWith('https://'));
+  let draining = false;
+  let activeHandlers = 0;
+  let listenerClosed = false;
+  let shutdownPromise;
+  let finishShutdown;
+  const finishIfDrained = () => {
+    if (listenerClosed && activeHandlers === 0) finishShutdown?.(true);
+  };
   const server = http.createServer(async (request, response) => {
+    // A client socket can close while Telegram is still sending. Track the actual
+    // handler lifetime, not response/socket events, before allowing process exit.
+    activeHandlers++;
     try {
       const pathname = new URL(request.url, 'http://localhost').pathname;
       if (pathname === '/healthz' && request.method === 'GET') return reply(response, { status: 200, body: { ok: true } });
+      if (pathname === '/readyz' && request.method === 'GET') return reply(response,
+        configured && !draining ? { status: 200, body: { ok: true } } : failure(503, 'NOT_READY'));
       if (pathname !== '/api/leads') {
         if (serveStatic) return await serveStatic(request, response);
         return reply(response, failure(404, 'NOT_FOUND'));
       }
       if (request.method !== 'POST') { response.setHeader('Allow', 'POST'); return reply(response, failure(405, 'METHOD_NOT_ALLOWED')); }
+      if (draining) {
+        response.setHeader('Connection', 'close');
+        return reply(response, failure(503, 'DELIVERY_UNAVAILABLE'));
+      }
       const remote = request.socket.remoteAddress || '';
       // Only opt in behind a loopback reverse proxy which overwrites X-Real-IP.
       const forwarded = request.headers['x-real-ip'];
@@ -73,15 +92,43 @@ export function createServer({ env = process.env, send = createTelegramSender({ 
       let body;
       try { body = await readBody(request, maxBytes, bodyTimeoutMs); }
       catch (error) { response.setHeader('Connection', 'close'); return reply(response, error); }
-      return reply(response, await service.submit(body));
+      const result = await service.submit(body);
+      if (draining) response.setHeader('Connection', 'close');
+      return reply(response, result);
     } catch {
       // Deliberately omit exception details: fetch errors may include a bot token.
       reply(response, failure(503, 'DELIVERY_UNAVAILABLE'));
+    } finally {
+      activeHandlers--;
+      finishIfDrained();
     }
   });
   server.headersTimeout = 10_000;
   server.requestTimeout = 15_000;
   server.maxRequestsPerSocket = 100;
+  server.beginDrain = () => { draining = true; };
+  server.shutdown = ({ timeoutMs = 20_000 } = {}) => {
+    if (shutdownPromise) return shutdownPromise;
+    server.beginDrain();
+    shutdownPromise = new Promise(resolve => {
+      let settled = false;
+      const timer = setTimeout(() => {
+        server.closeAllConnections();
+        finishShutdown(false);
+      }, timeoutMs);
+      finishShutdown = drained => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        resolve(drained);
+      };
+      server.close(() => {
+        listenerClosed = true;
+        finishIfDrained();
+      });
+    });
+    return shutdownPromise;
+  };
   return server;
 }
 
@@ -90,14 +137,13 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     console.error('Missing production configuration. See backend/README.md.');
     process.exitCode = 1;
   } else {
-    const server = createServer();
+    const server = createServer({ serviceOptions: { onDelivery: event => console.log(JSON.stringify(event)) } });
     const port = Number(process.env.PORT || 4322);
     const host = process.env.HOST || '127.0.0.1';
     server.listen(port, host, () => console.log(`DAO API listening on ${host}:${port}`));
     server.on('error', () => { console.error('API could not start. Check host/port configuration.'); process.exitCode = 1; });
     for (const signal of ['SIGINT', 'SIGTERM']) process.on(signal, () => {
-      server.close(() => process.exit(0));
-      setTimeout(() => process.exit(1), 12_000).unref();
+      server.shutdown().then(drained => process.exit(drained ? 0 : 1));
     });
   }
 }

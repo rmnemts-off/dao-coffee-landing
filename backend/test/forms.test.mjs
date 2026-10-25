@@ -20,7 +20,7 @@ function setup(t, fetchImpl = async () => success(), { shortTimeout = false } = 
   window.fetch = (url, options) => { calls.push({ url, ...options, payload: JSON.parse(options.body) }); return fetchImpl(url, options); };
   if (shortTimeout) {
     const real = window.setTimeout.bind(window);
-    window.setTimeout = (fn, ms) => real(fn, ms === 12_000 ? 15 : ms);
+    window.setTimeout = (fn, ms) => real(fn, ms === 20_000 ? 15 : ms);
   }
   const dialog = window.document.querySelector('#project-dialog');
   dialog.showModal = () => { dialog.open = true; };
