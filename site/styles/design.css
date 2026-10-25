@@ -60,23 +60,25 @@ svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.5;stroke
 /* ---------- Pattern: brandbook contours as a mask, lit around the pointer ---------- */
 .topo{position:relative;isolation:isolate;overflow:hidden;background:var(--topo-ground,transparent)}
 .topo>*{position:relative;z-index:1}
-.topo::before,.topo::after{
-  content:'';position:absolute;inset:0;z-index:0;pointer-events:none;background:var(--topo-ink,var(--white));
-  -webkit-mask:var(--topo-src,url('/assets/pattern/topo.svg')) var(--topo-position,center)/var(--topo-size,cover) no-repeat,var(--topo-fade,linear-gradient(#000,#000));
-  -webkit-mask-composite:source-in;
-  mask:var(--topo-src,url('/assets/pattern/topo.svg')) var(--topo-position,center)/var(--topo-size,cover) no-repeat,var(--topo-fade,linear-gradient(#000,#000));
-  mask-composite:intersect
+.topo>.topo-art{
+  position:absolute;inset:0;z-index:0;pointer-events:none;
+  /* One mask per layer avoids engine-specific mask-composite behaviour.
+     The SVG's transparent margins stay transparent at every aspect ratio. */
+  -webkit-mask-image:var(--topo-fade,linear-gradient(#000,#000));
+  mask-image:var(--topo-fade,linear-gradient(#000,#000))
 }
-.topo::before{opacity:var(--topo-rest,.42)}
+.topo-art::before,.topo-art::after{
+  content:'';position:absolute;inset:0;pointer-events:none;background:var(--topo-ink,var(--white));
+  -webkit-mask:var(--topo-src,url('/assets/pattern/topo.svg')) var(--topo-position,center)/var(--topo-size,cover) no-repeat;
+  mask:var(--topo-src,url('/assets/pattern/topo.svg')) var(--topo-position,center)/var(--topo-size,cover) no-repeat
+}
+.topo-art::before{opacity:var(--topo-rest,.42)}
 /* The lit layer keeps the same fade, so text areas stay clean under the cursor too */
-.topo::after{
-  background:var(--topo-lit-ink,var(--topo-ink,var(--white)));opacity:0;transition:opacity var(--duration-slow) var(--ease);
-  -webkit-mask:var(--topo-src,url('/assets/pattern/topo.svg')) var(--topo-position,center)/var(--topo-size,cover) no-repeat,var(--topo-fade,linear-gradient(#000,#000)),radial-gradient(circle var(--topo-radius,260px) at var(--mx,50%) var(--my,50%),#000 20%,transparent 100%);
-  -webkit-mask-composite:source-in;
-  mask:var(--topo-src,url('/assets/pattern/topo.svg')) var(--topo-position,center)/var(--topo-size,cover) no-repeat,var(--topo-fade,linear-gradient(#000,#000)),radial-gradient(circle var(--topo-radius,260px) at var(--mx,50%) var(--my,50%),#000 20%,transparent 100%);
-  mask-composite:intersect
+.topo-art::after{
+  background:radial-gradient(circle var(--topo-radius,260px) at var(--mx,50%) var(--my,50%),var(--topo-lit-ink,var(--topo-ink,var(--white))) 20%,transparent 100%);
+  opacity:0;transition:opacity var(--duration-slow) var(--ease)
 }
-.topo[data-lit]::after{opacity:1}
+.topo[data-lit]>.topo-art::after{opacity:1}
 .topo-trail{--topo-src:url('/assets/pattern/topo-trail.svg')}
 .topo-cream{--topo-ground:var(--cream);--topo-ink:var(--beige);--topo-lit-ink:var(--green);--topo-rest:.85}
 
@@ -402,7 +404,7 @@ a:hover>.trail-link::after,a:focus-visible>.trail-link::after,
 .form-fields label,.product-field legend{font-size:var(--fs-label);font-weight:400;line-height:1.4}
 .form-fields label{display:block;min-width:0}
 .contact-form input:not([type=checkbox]):not([type=hidden]),.contact-form textarea{display:block;width:100%;margin-top:8px;padding:12px 16px;min-height:clamp(52px,3rem + .4vw,60px);background:var(--white);color:var(--ink);border:1px solid var(--field-border);border-radius:var(--radius-field);font-size:max(16px,var(--fs-body));font-weight:400;outline:none;transition:border-color var(--duration-fast),box-shadow var(--duration-fast)}
-.contact-form input::placeholder,.contact-form textarea::placeholder{color:var(--text-muted);opacity:.85;font-weight:300}
+.contact-form input::placeholder,.contact-form textarea::placeholder{color:rgb(25 62 50 / .34);opacity:1;font-weight:300}
 .contact-form input:not([type=checkbox]):not([type=hidden]):hover,.contact-form textarea:hover{border-color:var(--ink)}
 .contact-form input:not([type=checkbox]):focus,.contact-form textarea:focus{border-color:var(--green);box-shadow:0 0 0 3px rgb(29 100 79 / .14)}
 .contact-form textarea{resize:vertical;min-height:120px;line-height:1.5}
@@ -517,7 +519,9 @@ a:hover>.trail-link::after,a:focus-visible>.trail-link::after,
   .editorial-grid,.product-reverse .editorial-grid{grid-template-columns:minmax(0,1fr);grid-template-rows:none;grid-template-areas:"heading" "visual" "copy" "lineup";row-gap:clamp(20px,3vw,32px)}
   .section-heading{margin-bottom:0}
   :root{--fs-hero:clamp(3.25rem,1.6rem + 6vw,5.5rem)}
+  .hero{align-items:start;padding-top:24px}
   .hero-content{grid-template-columns:minmax(0,1fr);gap:clamp(20px,4vw,40px)}
+  .hero-description{max-width:none}
   .hero-showcase{justify-self:center;max-width:36rem}
   .equipment-layout{grid-template-columns:minmax(0,1fr)}
   .coffee-stack{--main-h:clamp(13rem,56vw,24rem)}
@@ -527,6 +531,8 @@ a:hover>.trail-link::after,a:focus-visible>.trail-link::after,
   .section-wendougee,.section-linkbar{--fit-w:92%;--fit-h:none}
   .section-water{--fit-w:84%;--fit-h:clamp(13rem,58vw,24rem)}
   .product-copy{max-width:none}
+  .section-summary{max-width:none;text-wrap:wrap}
+  .product-facts,.equipment-heading>p{max-width:none}
   .editorial-grid>.lineup{margin-top:8px}
   .models-wendougee{grid-template-columns:repeat(6,minmax(0,1fr))}.models-wendougee .model{grid-column:span 2}.models-wendougee .model:nth-last-child(-n+2){grid-column:span 3}
   .contact-layout{grid-template-columns:minmax(0,1fr);gap:clamp(36px,6vw,56px)}
@@ -536,14 +542,15 @@ a:hover>.trail-link::after,a:focus-visible>.trail-link::after,
 @media(max-width:640px){
   .hero{--topo-rest:.34}
   .hero h1{line-height:1.03}
-  .hero-description{max-width:28ch}
   .cta{width:min(100%,22rem)}
   .models{gap:8px}
   .model{padding:12px 10px}
   .model-picture{height:72px}
   .italian-composition{max-width:none;gap:16px}.italian-piece img{height:clamp(14rem,62vw,18rem)}.italian-piece .ceado-grinder{height:clamp(13rem,57vw,16.5rem)}
   .founder-head{grid-template-columns:minmax(0,8.5rem) minmax(0,1fr);align-items:end}
-  .founder-contacts{grid-template-columns:minmax(0,1fr)}
+  .founder-contacts{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:16px}
+  .founder-contacts .contact-channel{padding-block:10px}
+  .founder-contacts .contact-value{font-size:clamp(.875rem,3.65vw,1rem)}
   .contact-form{padding:28px 20px}
   .form-fields{grid-template-columns:minmax(0,1fr)}
   .interest-grid{gap:8px}
@@ -560,6 +567,17 @@ a:hover>.trail-link::after,a:focus-visible>.trail-link::after,
   .project-dialog .contact-form textarea{min-height:92px;height:92px;padding:8px 10px}
   .project-dialog .consent{margin:12px 0;font-size:13px}
   .project-dialog .form-submit{min-height:44px;padding-block:10px}
+  /* The final form uses the same compact rhythm as the modal on phones. */
+  .contact-layout>.contact-form{padding:20px}
+  .contact-layout>.contact-form h3{margin-bottom:14px;font-size:28px;line-height:1.12}
+  .contact-layout>.contact-form .form-fields{grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:10px}
+  .contact-layout>.contact-form .form-fields label,.contact-layout>.contact-form .product-field legend{font-size:14px;line-height:1.35}
+  .contact-layout>.contact-form input:not([type=checkbox]):not([type=hidden]){min-height:44px;margin-top:6px;padding:10px 8px;font-size:16px}
+  .contact-layout>.contact-form .interest-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 8px}
+  .contact-layout>.contact-form .form-fields .interest-option{min-height:38px;gap:6px;padding:6px 7px;font-size:13px;line-height:1.3}
+  .contact-layout>.contact-form textarea{min-height:92px;height:92px;margin-top:6px;padding:8px 10px;font-size:16px}
+  .contact-layout>.contact-form .consent{gap:10px;margin:12px 0;padding-top:0;font-size:13px;line-height:1.4}
+  .contact-layout>.contact-form .form-submit{min-height:44px;padding-block:10px}
   .equipment-heading h2{font-size:clamp(1.625rem,7.6vw,2.5rem)}
   .footer-copyright{width:100%;margin-left:0;text-align:left}
 }
@@ -570,6 +588,9 @@ a:hover>.trail-link::after,a:focus-visible>.trail-link::after,
   .project-dialog .dialog-shell{padding:16px}
   .project-dialog .dialog-close{top:12px;right:12px}
   .project-dialog .contact-form h3{font-size:25px}
+  .contact-layout>.contact-form{padding:16px}
+  .contact-layout>.contact-form h3{font-size:25px}
+  .contact-layout>.contact-form .form-fields{grid-template-columns:minmax(0,.7fr) minmax(0,1.3fr)}
   .founder-head{grid-template-columns:minmax(0,1fr)}
   .founder-photo{max-width:12rem}
 }
@@ -579,7 +600,7 @@ a:hover>.trail-link::after,a:focus-visible>.trail-link::after,
   :root{--modal-open-dur:180ms;--modal-close-dur:120ms;--modal-scale:1;--modal-scale-close:1}
   body:not(.error-page){background-image:linear-gradient(180deg,var(--gray) 0%,var(--sage) 12%,var(--sand) 26%,var(--sage) 40%,var(--sand) 58%,var(--sage) 74%,var(--sand) 88%,var(--sage) 100%)}
   .hero,.product-section,.equipment-section,.contact-section,.site-footer{background:transparent}
-  .topo::after,[data-spotlight]::before,.scratch-cover,.scratch-reveal{display:none}
+  .topo-art::after,[data-spotlight]::before,.scratch-cover,.scratch-reveal{display:none}
   .product-visual>img,.italian-piece img,.showcase-item img,.model-picture img,.coffee-stack .pack{transition:none}
   .reveal{opacity:1;transform:none}
   .t-modal,.t-modal.is-open,.t-modal.is-closing{transform:none;will-change:opacity}
