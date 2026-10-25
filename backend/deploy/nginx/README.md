@@ -43,7 +43,9 @@
 
 Установить root-owned `certbot-deploy-hook.sh` с режимом `0755` в `/etc/letsencrypt/renewal-hooks/deploy/dao-nginx-reload`. Установить `dao-certbot-renew.service` и `.timer`, выполнить `systemctl daemon-reload`, включить новый timer и отключить старый `certbot.timer`. Новый timer запускается дважды в день с задержкой до часа; это проверка срока, а не принудительный выпуск каждый раз. Ограничения service разрешают запись в каталоги Certbot, журналы Nginx и существующий `/run/nginx.pid`: эти пути нужны проверке `nginx -t` внутри deploy hook.
 
-Проверить `/opt/dao-certbot/bin/certbot renew --dry-run --run-deploy-hooks`, выполнение hook с теми же systemd-ограничениями и запуск нового service. Одна успешная проверка HTTPS не подтверждает будущую работу продления. Для перехода с уже работающего IP на домен использовать [составной bundle и процедуру миграции](../DOMAIN.md): они сохраняют IP TLS и HTTP-01. `APP_ORIGIN` и vhost переключаются согласованно; настройки CRM не меняются.
+В service отключена внутренняя случайная пауза Certbot через `--no-random-sleep-on-renew`: распределение запусков уже обеспечивает `RandomizedDelaySec=1h` в timer. Иначе дополнительная пауза может превысить `TimeoutStartSec=180s` ещё до обращения к ACME.
+
+Проверить `/opt/dao-certbot/bin/certbot renew --dry-run --run-deploy-hooks --no-random-sleep-on-renew`, выполнение hook с теми же systemd-ограничениями и запуск нового service. Одна успешная проверка HTTPS не подтверждает будущую работу продления. Для перехода с уже работающего IP на домен использовать [составной bundle и процедуру миграции](../DOMAIN.md): они сохраняют IP TLS и HTTP-01. `APP_ORIGIN` и vhost переключаются согласованно; настройки CRM не меняются.
 
 ## До разрешения публикации
 

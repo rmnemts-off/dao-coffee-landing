@@ -5,7 +5,8 @@ After=network-online.target
 
 [Service]
 Type=oneshot
-ExecStart=/opt/dao-certbot/bin/certbot renew --quiet
+# The timer already provides jitter; Certbot's extra sleep can exceed this timeout.
+ExecStart=/opt/dao-certbot/bin/certbot renew --quiet --no-random-sleep-on-renew
 TimeoutStartSec=180s
 UMask=0077
 NoNewPrivileges=yes
