@@ -103,6 +103,7 @@
     form.setAttribute('aria-busy', String(pending));
     form.dataset.state = pending ? 'sending' : state?.state || 'ready';
     if (state?.message) form.querySelector('.form-status').textContent = state.message;
+    if (state?.fieldErrors) showFieldErrors(form, state.fieldErrors, { focus: false });
   }
   function payloadFor(form) {
     const product = productIds[form.elements.product.value] || null;
@@ -116,7 +117,7 @@
       source: form === inlineForm ? 'inline' : product ? 'brand-modal' : 'hero-modal',
     };
   }
-  function showFieldErrors(form, errors) {
+  function showFieldErrors(form, errors, { focus = true } = {}) {
     const allowed = { name: form.elements.name, phone: form.elements.phone, consent: form.elements.consent,
       comment: form.elements.comment, interests: form.querySelector('.product-field') };
     let first;
@@ -126,7 +127,7 @@
       field.setAttribute('aria-invalid', 'true');
       first ||= key === 'interests' ? field.querySelector('input') : field;
     }
-    first?.focus();
+    if (focus) first?.focus();
   }
   function setModel(form, model = '') {
     form.dataset.model = model;
@@ -345,7 +346,6 @@
       for (const target of forms) if (target.dataset.context === context) renderDelivery(target);
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), 20_000);
-      let fieldErrors;
       try {
         const response = await fetch('/api/leads', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -360,7 +360,7 @@
           if (result?.ok !== false) state.message = unknownDelivery;
           else if (response.status === 400 && result.code === 'VALIDATION_ERROR') {
             state.message = 'Проверьте отмеченные поля. Заявка не отправлена.';
-            fieldErrors = result.fieldErrors;
+            state.fieldErrors = result.fieldErrors;
           } else if (response.status === 429) state.message = 'Слишком много попыток. Подождите минуту и попробуйте снова.';
           else if (response.status === 413) state.message = 'Заявка слишком большая. Сократите текст и попробуйте снова.';
           else if (result.code === 'DELIVERY_UNCERTAIN') state.message = unknownDelivery;
@@ -375,7 +375,8 @@
         state.pending = false;
         for (const target of forms) if (target.dataset.context === context) renderDelivery(target);
         // A closed/reused modal must not steal focus or receive another context's errors.
-        if (fieldErrors && form.dataset.context === context && (form === inlineForm || dialog.open)) showFieldErrors(form, fieldErrors);
+        const sourceVisible = form === inlineForm ? !dialog.open : dialog.open;
+        if (state.fieldErrors && form.dataset.context === context && sourceVisible) showFieldErrors(form, state.fieldErrors);
       }
     });
     // Without JS, the inline submit remains disabled and cannot send a GET request.

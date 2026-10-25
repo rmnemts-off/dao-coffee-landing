@@ -58,7 +58,7 @@ export function createLeadService({ send, now = Date.now, dedupMs = 300_000, max
       if (outcome === 'rejected') {
         const retryMs = Math.max(5, result.retryAfter || 5) * 1000;
         entry.until = now() + retryMs;
-        upstreamBlockedUntil = entry.until;
+        upstreamBlockedUntil = Math.max(upstreamBlockedUntil, entry.until);
         return failure(502, 'DELIVERY_FAILED');
       }
       return failure(502, 'DELIVERY_UNCERTAIN');

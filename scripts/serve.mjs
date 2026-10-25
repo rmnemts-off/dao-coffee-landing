@@ -14,7 +14,7 @@ const server = http.createServer(async (request, response) => {
   }
   try {
     const pathname = decodeURIComponent(new URL(request.url, 'http://localhost').pathname);
-    const candidate = path.resolve(root, `.${pathname === '/' ? '/index.html' : pathname}`);
+    const candidate = path.resolve(root, `.${pathname.endsWith('/') ? `${pathname}index.html` : pathname}`);
     const relative = path.relative(root, candidate);
     if (relative.startsWith('..') || path.isAbsolute(relative)) {
       response.writeHead(403).end();

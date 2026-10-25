@@ -36,7 +36,5 @@ server {
         default_type text/plain;
         return 200 "User-agent: *\nDisallow: /\n";
     }
-    location = /design-system { return 404; }
-    location ^~ /design-system/ { return 404; }
     include /etc/nginx/snippets/dao-site.conf;
 }

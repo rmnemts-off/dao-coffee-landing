@@ -43,7 +43,7 @@
 
 Установить root-owned `certbot-deploy-hook.sh` с режимом `0755` в `/etc/letsencrypt/renewal-hooks/deploy/dao-nginx-reload`. Установить `dao-certbot-renew.service` и `.timer`, выполнить `systemctl daemon-reload`, включить новый timer и отключить старый `certbot.timer`. Новый timer запускается дважды в день с задержкой до часа; это проверка срока, а не принудительный выпуск каждый раз. Ограничения service разрешают запись в каталоги Certbot, журналы Nginx и существующий `/run/nginx.pid`: эти пути нужны проверке `nginx -t` внутри deploy hook.
 
-Проверить `certbot renew --dry-run --run-deploy-hooks` через новый бинарник, выполнение hook с теми же systemd-ограничениями и запуск нового service. Одна успешная проверка HTTPS не подтверждает будущую работу продления. После переноса DNS выпустить доменный сертификат, заменить vhost на доменный шаблон и согласованно сменить `APP_ORIGIN` с перезапуском API; настройки CRM для этого менять не нужно.
+Проверить `/opt/dao-certbot/bin/certbot renew --dry-run --run-deploy-hooks`, выполнение hook с теми же systemd-ограничениями и запуск нового service. Одна успешная проверка HTTPS не подтверждает будущую работу продления. Для перехода с уже работающего IP на домен использовать [составной bundle и процедуру миграции](../DOMAIN.md): они сохраняют IP TLS и HTTP-01. `APP_ORIGIN` и vhost переключаются согласованно; настройки CRM не меняются.
 
 ## До разрешения публикации
 
@@ -70,7 +70,7 @@
 3. Выпустить сертификат с **webroot authenticator**, сохраняя конфиги под контролем проекта. Пример ниже — схема команды, не команда с реальными параметрами:
 
    ```sh
-   certbot certonly --webroot --webroot-path /var/lib/letsencrypt \
+   /opt/dao-certbot/bin/certbot certonly --webroot --webroot-path /var/lib/letsencrypt \
      --cert-name CONFIRMED_DOMAIN -d CONFIRMED_DOMAIN \
      --email CONFIRMED_ADMIN_EMAIL --agree-tos
    ```
@@ -78,7 +78,7 @@
    `CONFIRMED_DOMAIN` и email заменить до запуска. Использование `--cert-name` связывает имя каталога `/etc/letsencrypt/live/` с именем в шаблоне. Если сертификат уже существует, сначала проверить его фактическое имя, а не предполагать отсутствие суффикса `-0001`. Самоподписанные сертификаты не подставлять в production.
 4. Подготовить HTTPS-шаблон, проверить существование `fullchain.pem` и `privkey.pem`. Заменить активный bootstrap-файл, выполнить `nginx -t` и только при успехе reload. Если проверка не прошла, вернуть прежний файл; работающий процесс не останавливать. HTTPS отдаёт только `/srv/dao-coffee/current/site`, а HTTP сохраняет challenge и перенаправляет остальные публичные пути на фиксированный канонический домен.
 5. Установить `certbot-deploy-hook.sh` как root-owned исполняемый файл `/etc/letsencrypt/renewal-hooks/deploy/dao-nginx-reload`, права `0755`. Проверить абсолютные пути `/usr/sbin/nginx` и `/usr/bin/systemctl`. Hook сначала проверяет конфигурацию, затем выполняет reload; приватный ключ не копируется в репозиторий или релиз.
-6. Проверить установленный механизм автоматического renewal: он зависит от способа установки Certbot (пакет/timer/snap). Выполнить `certbot renew --dry-run`, а hook проверить отдельно. Обычный `--dry-run` не запускает deploy hooks; при необходимости использовать поддерживаемый установленной версией `--run-deploy-hooks`. Не создавать второй timer поверх уже действующего.
+6. Проверить установленный механизм автоматического renewal: он зависит от способа установки Certbot (пакет/timer/snap). Выполнить `/opt/dao-certbot/bin/certbot renew --dry-run --run-deploy-hooks`, а hook проверить отдельно. Обычный `--dry-run` не запускает deploy hooks; при необходимости использовать поддерживаемый установленной версией `--run-deploy-hooks`. Не создавать второй timer поверх уже действующего.
 
 Описанный Certbot запускается только после подтверждения DNS и доступа к серверу. HTTPS-шаблон нельзя включить до появления сертификата: `nginx -t` закономерно завершится ошибкой чтения PEM-файлов.
 

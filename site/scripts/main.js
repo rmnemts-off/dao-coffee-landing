@@ -21,7 +21,7 @@ document.addEventListener('click', event => {
 document.addEventListener('keydown', event => {
   if (event.key === 'Escape' && !mobileMenu.hidden) closeMenu(true);
 });
-matchMedia('(min-width: 1201px)').addEventListener('change', event => {
+matchMedia('(min-width: 1281px)').addEventListener('change', event => {
   if (event.matches) closeMenu();
 });
 

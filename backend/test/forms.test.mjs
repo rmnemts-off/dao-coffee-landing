@@ -87,6 +87,54 @@ test('every brand carries its id and source; hidden interests are empty', async 
   }
 });
 
+test('late validation errors survive closing and reopening the shared general draft without stealing focus', async t => {
+  let resolve;
+  const x = setup(t, () => new Promise(r => { resolve = r; }));
+  const opener = x.open('');
+  x.fill(x.modal);
+  // One astral character passes the browser UTF-16 length check but is one
+  // code point to server validation; exercise the genuine server-error path.
+  x.modal.elements.name.value = '😀'; x.change(x.modal.elements.name);
+  x.submit(x.modal);
+  assert.equal(x.calls.length, 1);
+  await x.close();
+  assert.equal(x.window.document.activeElement, opener);
+  resolve(Response.json({ ok: false, code: 'VALIDATION_ERROR', fieldErrors: { name: 'Имя должно содержать от 2 до 100 символов.' } }, { status: 400 }));
+  await tick();
+  assert.equal(x.window.document.activeElement, opener, 'a closed modal response must not move focus into the inline form');
+  assert.match(x.inline.querySelector('.form-status').textContent, /Проверьте отмеченные поля/);
+  assert.equal(x.inline.elements.name.getAttribute('aria-invalid'), 'true');
+  x.open('');
+  assert.equal(x.modal.elements.name.value, '😀');
+  assert.match(x.modal.querySelector('.form-status').textContent, /Проверьте отмеченные поля/);
+  assert.equal(x.modal.elements.name.getAttribute('aria-invalid'), 'true');
+  assert.equal(x.window.document.activeElement, x.dialog.querySelector('.dialog-close'));
+  x.modal.elements.name.value = 'Тест'; x.change(x.modal.elements.name);
+  for (const form of [x.modal, x.inline]) {
+    assert.equal(form.elements.name.hasAttribute('aria-invalid'), false);
+    assert.equal(form.querySelector('.form-status').textContent, '');
+  }
+});
+
+test('late brand validation errors stay with their draft when the modal changes context', async t => {
+  let resolve;
+  const x = setup(t, () => new Promise(r => { resolve = r; }));
+  x.open('DrinkX'); x.fill(x.modal); x.submit(x.modal);
+  await x.close();
+  x.open('LinkBar'); x.fill(x.modal, 'Отдельная заявка LinkBar');
+  x.modal.elements.comment.focus();
+  const focused = x.window.document.activeElement;
+  resolve(Response.json({ ok: false, code: 'VALIDATION_ERROR', fieldErrors: { phone: 'Проверьте телефон.' } }, { status: 400 }));
+  await tick();
+  assert.equal(x.window.document.activeElement, focused);
+  assert.equal(x.modal.querySelectorAll('[aria-invalid="true"]').length, 0);
+  assert.equal(x.modal.querySelector('.form-status').textContent, '');
+  assert.equal(x.inline.querySelectorAll('[aria-invalid="true"]').length, 0);
+  await x.close(); x.open('DrinkX');
+  assert.equal(x.modal.elements.phone.getAttribute('aria-invalid'), 'true');
+  assert.match(x.modal.querySelector('.form-status').textContent, /Проверьте отмеченные поля/);
+});
+
 test('model context, separate brand drafts, late responses and focus survive modal reuse', async t => {
   let resolve;
   const x = setup(t, () => new Promise(r => { resolve = r; }));

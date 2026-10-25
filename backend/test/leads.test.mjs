@@ -88,6 +88,32 @@ test('ingress windows, bounded memory and upstream retry_after are enforced', as
   assert.equal((await bounded.submit(valid())).status, 200);
 });
 
+test('a later concurrent refusal cannot shorten an existing upstream retry window', async () => {
+  let clock = 0;
+  let calls = 0;
+  const pending = [];
+  const service = createLeadService({ now: () => clock, send: () => {
+    calls++;
+    return calls <= 2 ? new Promise(resolve => pending.push(resolve)) : { kind: 'delivered' };
+  } });
+  const first = service.submit(valid({ comment: 'first' }));
+  const second = service.submit(valid({ comment: 'second' }));
+  await Promise.resolve();
+  assert.equal(calls, 2);
+  pending[0]({ kind: 'rejected', retryAfter: 60 });
+  assert.equal((await first).status, 502);
+  clock = 1000;
+  pending[1]({ kind: 'rejected', retryAfter: 5 });
+  assert.equal((await second).status, 502);
+
+  clock = 7000;
+  assert.equal((await service.submit(valid({ comment: 'third' }))).status, 503);
+  assert.equal(calls, 2);
+  clock = 60_000;
+  assert.equal((await service.submit(valid({ comment: 'third' }))).status, 200);
+  assert.equal(calls, 3);
+});
+
 test('only new validated deliveries consume the global budget, including concurrent reservations', async () => {
   let clock = 0;
   let calls = 0;
