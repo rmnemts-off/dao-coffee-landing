@@ -6,6 +6,8 @@ import { JSDOM } from 'jsdom';
 
 const html = await readFile(new URL('../../site/index.html', import.meta.url), 'utf8');
 const code = await readFile(new URL('../../site/scripts/forms.js', import.meta.url), 'utf8');
+const effectsCode = await readFile(new URL('../../site/scripts/effects.js', import.meta.url), 'utf8');
+const mainCode = await readFile(new URL('../../site/scripts/main.js', import.meta.url), 'utf8');
 const tick = () => new Promise(resolve => setTimeout(resolve, 0));
 const success = () => Response.json({ ok: true, requestId: 'test-request-id' });
 const waitFor = async predicate => {
@@ -15,13 +17,23 @@ const waitFor = async predicate => {
 const finished = form => waitFor(() => form.dataset.state !== 'sending');
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-function setup(t, fetchImpl = async () => success(), { shortTimeout = false, savedStorage = {}, storageBlocked = false, hashingAvailable = true } = {}) {
+function setup(t, fetchImpl = async () => success(), { shortTimeout = false, savedStorage = {}, storageBlocked = false, hashingAvailable = true, withPageScripts = false } = {}) {
   // Exercise the actual HTML hooks + shipped script, not a copy of form logic.
   // JSDOM never loads resources; all fetch calls are explicitly mocked.
-  const dom = new JSDOM(html, { runScripts: 'outside-only', url: 'http://localhost:4322/' });
+  const dom = new JSDOM(html, { runScripts: 'outside-only', url: 'http://localhost:4322/', pretendToBeVisual: true });
   t.after(() => dom.window.close());
   const { window } = dom;
-  window.matchMedia = () => ({ matches: true });
+  window.matchMedia = query => ({
+    matches: withPageScripts ? query.includes('hover: hover') || query.includes('min-width') : true,
+    addEventListener() {}, removeEventListener() {},
+  });
+  if (withPageScripts) {
+    // Layout/observer APIs are browser services, not application behavior. The
+    // shipped page scripts still register their actual event handlers below.
+    window.IntersectionObserver = class { observe() {} unobserve() {} disconnect() {} };
+    window.ResizeObserver = class { observe() {} unobserve() {} disconnect() {} };
+    Object.defineProperty(window.document, 'fonts', { value: { ready: Promise.resolve(), load: () => Promise.resolve() } });
+  }
   window.AbortController = AbortController;
   window.TextEncoder = TextEncoder;
   Object.defineProperty(window, 'crypto', { value: hashingAvailable ? webcrypto : {
@@ -39,6 +51,7 @@ function setup(t, fetchImpl = async () => success(), { shortTimeout = false, sav
   dialog.showModal = () => { dialog.open = true; };
   dialog.close = () => { dialog.open = false; dialog.dispatchEvent(new window.Event('close')); };
   window.eval(code);
+  if (withPageScripts) { window.eval(effectsCode); window.eval(mainCode); }
   const inline = window.document.querySelector('#project-form');
   const modal = window.document.querySelector('#dialog-form');
   const change = (field, type = 'input') => field.dispatchEvent(new window.Event(type, { bubbles: true }));
@@ -53,7 +66,7 @@ function setup(t, fetchImpl = async () => success(), { shortTimeout = false, sav
     assert.ok(trigger, `CTA for ${product}`);
     trigger.click(); return trigger;
   };
-  const close = async () => { dialog.querySelector('.dialog-close').click(); await tick(); };
+  const close = async () => { dialog.querySelector('.dialog-close').click(); await waitFor(() => !dialog.open); };
   const submit = form => form.dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
   const storageSnapshot = () => Object.fromEntries(Object.keys(window.sessionStorage).map(key => [key, window.sessionStorage.getItem(key)]));
   return { window, dialog, inline, modal, change, fill, open, close, submit, calls, storageSnapshot };
@@ -88,17 +101,40 @@ test('inline and hero share a draft, normalized phone and a single pending reque
   }
 });
 
-test('every brand carries its id and source; hidden interests are empty', async t => {
+test('all seven actual product CTAs submit their section context through the shipped form', async t => {
   const x = setup(t);
-  const directions = { DrinkX: 'drinkx', Wendougee: 'wendougee', LinkBar: 'linkbar', 'Кофе и СТМ': 'coffee', 'XLVI / Ceado': 'xlvi-ceado', 'Водоподготовка': 'water', 'Комплектация': 'horeca' };
-  for (const [label, id] of Object.entries(directions)) {
-    x.open(label); x.fill(x.modal); x.submit(x.modal); await finished(x.modal);
-    assert.equal(x.calls.at(-1).payload.product, id);
-    assert.equal(x.calls.at(-1).payload.source, 'brand-modal');
-    assert.deepEqual(x.calls.at(-1).payload.interests, []);
-    assert.equal(x.calls.at(-1).payload.model, null);
+  const expected = {
+    drinkx: 'DrinkX', wendougee: 'Wendougee', linkbar: 'LinkBar', coffee: 'Кофе и СТМ',
+    'xlvi-ceado': 'XLVI / Ceado', water: 'Водоподготовка', horeca: 'Комплектация',
+  };
+  const ctas = [...x.window.document.querySelectorAll('main section .product-cta')];
+  assert.deepEqual(ctas.map(cta => cta.closest('section').id).sort(), Object.keys(expected).sort());
+  for (const [index, cta] of ctas.entries()) {
+    const product = cta.closest('section').id;
+    const comment = `Запрос из раздела ${product}`;
+    assert.equal(cta.dataset.product, expected[product]);
+    assert.equal(cta.dataset.model, '');
+    cta.click();
+    assert.equal(x.dialog.open, true);
+    assert.equal(x.modal.elements.product.value, expected[product]);
+    assert.equal(x.modal.querySelector('.product-field').hidden, true);
     assert.equal(x.modal.querySelector('.product-field').disabled, true);
+    assert.equal(x.modal.querySelector('.selected-model').hidden, true);
+    x.fill(x.modal, comment);
+    // Use the actual submit button: this also exercises the HTML form hooks
+    // and browser submission event path, not only a hand-dispatched event.
+    x.modal.querySelector('button[type="submit"]').click(); await finished(x.modal);
+    assert.equal(x.calls.length, index + 1);
+    assert.equal(x.calls.at(-1).url, '/api/leads');
+    assert.equal(x.calls.at(-1).method, 'POST');
+    assert.match(x.calls.at(-1).headers['Idempotency-Key'], uuidPattern);
+    assert.deepEqual(x.calls.at(-1).payload, {
+      schemaVersion: 1, name: 'Тест', phone: '+70000000001', product,
+      interests: [], model: null, comment, consent: true, source: 'brand-modal',
+    });
+    assert.equal(x.modal.dataset.state, 'success');
     await x.close();
+    assert.equal(x.window.document.activeElement, cta);
   }
 });
 
@@ -307,4 +343,95 @@ test('idempotency conflicts preserve the draft and a corrected payload gets a fr
   x.submit(x.modal); await finished(x.modal);
   assert.notEqual(x.calls[1].headers['Idempotency-Key'], key);
   assert.equal(x.calls[1].payload.product, 'drinkx');
+});
+
+
+test('actual hero and inline submits preserve multiple interests after visiting a brand', async t => {
+  const x = setup(t);
+  const hero = x.window.document.querySelector('.hero button[data-product]');
+  const linkbar = x.window.document.querySelector('#linkbar .product-cta');
+  const choices = [...x.inline.querySelectorAll('[name="interests"]')];
+  x.fill(x.inline, 'Нужны станции для офиса и водоподготовка');
+  for (const label of ['DrinkX', 'Водоподготовка']) choices.find(field => field.value === label).click();
+  hero.click();
+  assert.equal(x.modal.querySelector('.product-field').hidden, false);
+  assert.equal(x.modal.querySelector('.product-field').disabled, false);
+  x.modal.querySelector('button[type="submit"]').click(); await finished(x.modal);
+  assert.deepEqual(x.calls[0].payload, {
+    schemaVersion: 1, name: 'Тест', phone: '+70000000001', product: null,
+    interests: ['drinkx', 'water'], model: null, comment: 'Нужны станции для офиса и водоподготовка',
+    consent: true, source: 'hero-modal',
+  });
+  await x.close(); linkbar.click();
+  assert.equal(x.modal.elements.comment.value, '');
+  x.fill(x.modal, 'Отдельный вопрос по LinkBar');
+  x.modal.querySelector('button[type="submit"]').click(); await finished(x.modal);
+  assert.equal(x.calls[1].payload.product, 'linkbar');
+  assert.deepEqual(x.calls[1].payload.interests, []);
+  await x.close();
+  assert.equal(x.inline.elements.product.value, '');
+  assert.equal(x.inline.elements.comment.value, 'Нужны станции для офиса и водоподготовка');
+  x.inline.querySelector('button[type="submit"]').click(); await finished(x.inline);
+  assert.deepEqual(x.calls[2].payload, { ...x.calls[0].payload, source: 'inline' });
+  hero.click();
+  const advice = [...x.modal.querySelectorAll('.interest-option')].find(label => label.textContent.trim() === 'Нужен совет');
+  assert.ok(advice, 'Current visible advice label must map to the undecided value');
+  advice.click();
+  x.modal.querySelector('button[type="submit"]').click(); await finished(x.modal);
+  assert.deepEqual(x.calls[3].payload.interests, ['undecided']);
+  assert.equal(x.calls[3].payload.product, null);
+  assert.equal(x.calls[3].payload.model, null);
+  assert.equal(x.calls[3].payload.source, 'hero-modal');
+});
+
+test('technical and price questions stay in the comment of the same product request', async t => {
+  const x = setup(t);
+  x.window.document.querySelector('#drinkx .product-cta').click();
+  const questions = [
+    'Какое напряжение питания нужно для DrinkX S400 и можно ли подключить систему учёта?',
+    'Пришлите прайс на DrinkX S400 для офиса.',
+  ];
+  for (const question of questions) {
+    x.fill(x.modal, question);
+    x.modal.querySelector('button[type="submit"]').click(); await finished(x.modal);
+  }
+  assert.equal(x.calls.length, 2);
+  assert.deepEqual(x.calls[0].payload, {
+    schemaVersion: 1, name: 'Тест', phone: '+70000000001', product: 'drinkx',
+    interests: [], model: null, comment: questions[0], consent: true, source: 'brand-modal',
+  });
+  assert.deepEqual(x.calls[1].payload, { ...x.calls[0].payload, comment: questions[1] });
+  // Naming a model in free text is not an explicit model selection.
+  assert.equal(x.modal.dataset.model, '');
+  assert.equal(x.modal.querySelector('.selected-model').hidden, true);
+});
+
+test('hovering or clicking informational model cards never invents a selected model', async t => {
+  const x = setup(t, async () => success(), { withPageScripts: true });
+  const sections = [...x.window.document.querySelectorAll('section')].filter(section => section.querySelector('.model[data-model]'));
+  assert.deepEqual(sections.map(section => section.id), ['drinkx', 'wendougee', 'xlvi-ceado']);
+  for (const [index, section] of sections.entries()) {
+    const cards = [...section.querySelectorAll('.model[data-model]')];
+    assert.ok(cards.length > 0);
+    for (const card of cards) {
+      assert.ok(card.dataset.model, 'The informational card contains a real model name');
+      card.dispatchEvent(new x.window.MouseEvent('mouseenter', { bubbles: true }));
+      const move = new x.window.MouseEvent('pointermove', { bubbles: true, clientX: 40, clientY: 20 });
+      Object.defineProperty(move, 'pointerType', { value: 'mouse' });
+      card.dispatchEvent(move);
+      await waitFor(() => card.hasAttribute('data-lit'));
+      card.click();
+      assert.equal(x.dialog.open, false, 'A model card is not a request CTA');
+      assert.equal(x.calls.length, index, 'A hover or informational click cannot submit a request');
+      card.dispatchEvent(new x.window.Event('pointerleave'));
+    }
+    section.querySelector('.product-cta').click();
+    x.fill(x.modal);
+    x.modal.querySelector('button[type="submit"]').click(); await finished(x.modal);
+    assert.equal(x.calls.at(-1).payload.product, section.id);
+    assert.equal(x.calls.at(-1).payload.source, 'brand-modal');
+    assert.equal(x.calls.at(-1).payload.model, null);
+    assert.equal(x.modal.querySelector('.selected-model').hidden, true);
+    await x.close();
+  }
 });

@@ -1,4 +1,4 @@
-import { directions, sources } from './validation.mjs';
+import { inquiryContext } from './inquiry-context.mjs';
 
 // Only server configuration can select the destination. Never take a webhook
 // URL, CRM fields, assignee, category or entity type from a browser request.
@@ -37,11 +37,13 @@ export function bitrixConfig(env = {}) {
 const escape = value => String(value).replace(/[&<>"'\[\]]/g, char =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '[': '&#91;', ']': '&#93;' })[char]);
 export function formatComments(lead, requestId) {
-  const interests = lead.product ? directions[lead.product] : lead.interests.map(id => id === 'undecided' ? 'Помогите определиться' : directions[id]).join(', ');
+  const context = inquiryContext(lead);
   return [
+    `Направления: ${escape(context.topic)}`, `Модель: ${escape(lead.model || 'Не выбрана')}`,
+    `Блок сайта: ${escape(context.sourceBlockLabel)} (#${escape(context.sourceBlock)})`,
+    `Вопрос клиента: ${escape(lead.comment || 'Не указан')}`,
+    `Форма: ${escape(context.formLabel)}`,
     `Номер заявки: ${escape(requestId)}`, `Имя: ${escape(lead.name)}`, `Телефон: ${escape(lead.phone)}`,
-    `Направления: ${escape(interests)}`, `Модель: ${escape(lead.model || 'Не выбрана')}`,
-    `Комментарий: ${escape(lead.comment || 'Не указан')}`, `Форма: ${escape(sources[lead.source])}`,
     'Согласие на обработку данных: передано формой (true)',
   ].join('\n');
 }
@@ -101,8 +103,10 @@ export function createBitrixSender({ env = {}, timeoutMs = 8000, fetchImpl = fet
     try {
       return await deadline(timeoutMs, async signal => {
         const request = (method, params) => call(config.webhookUrl, method, params, signal, fetchImpl);
+        const context = inquiryContext(lead);
         const fields = {
-          title: `DAO — ${lead.product ? directions[lead.product] : 'Общая заявка'}`,
+          title: context.title,
+          sourceDescription: `Сайт DAO; ${context.sourceBlockLabel} (#${context.sourceBlock}); ${context.formLabel}`,
           comments: formatComments(lead, requestId), assignedById: config.assignedById,
           originatorId, originId: requestId, sourceId: config.sourceId, opened: 'N',
         };
