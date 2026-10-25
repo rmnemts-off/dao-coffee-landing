@@ -1,6 +1,10 @@
 // Interactions of the design system page itself: copying colours, contrast
-// figures, chapter navigation, the "no motion" preview and the demo form.
+// figures, chapter navigation, the "no motion" preview, demo-only motion and
+// the demo form. Shared brand effects come from /scripts/effects.js.
 (() => {
+  const finePointer = matchMedia('(hover: hover) and (pointer: fine)');
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+  const root = document.documentElement;
   const toast = document.querySelector('#toast');
   let toastTimer;
   function say(message) {
@@ -50,7 +54,10 @@
   const mark = id => {
     if (id === current) return;
     current = id;
-    links.forEach((link, key) => link.toggleAttribute('aria-current', key === id));
+    links.forEach((link, key) => {
+      if (key === id) link.setAttribute('aria-current', 'location');
+      else link.removeAttribute('aria-current');
+    });
     const active = links.get(id);
     const strip = active?.closest('ol');
     if (strip && getComputedStyle(strip).display === 'flex') {
@@ -58,67 +65,88 @@
     }
   };
   const visible = new Set();
-  const observer = new IntersectionObserver(entries => {
+  const chapterObserver = new IntersectionObserver(entries => {
     entries.forEach(entry => entry.isIntersecting ? visible.add(entry.target) : visible.delete(entry.target));
     const first = chapters.find(chapter => visible.has(chapter));
     if (first) mark(first.id);
   }, { rootMargin: '-35% 0px -55% 0px' });
-  chapters.forEach(chapter => observer.observe(chapter));
+  chapters.forEach(chapter => chapterObserver.observe(chapter));
 
   // Preview the page as it looks without motion.
   document.querySelector('#motion-off').addEventListener('change', event => {
-    document.documentElement.toggleAttribute('data-motion-off', event.target.checked);
+    root.toggleAttribute('data-motion-off', event.target.checked);
     document.querySelectorAll('[data-lit]').forEach(element => element.removeAttribute('data-lit'));
     say(event.target.checked ? 'Движение выключено' : 'Движение включено');
   });
 
-  // Demo form: +7 mask, exclusive "help me choose", honest status.
+  // Demo-only motion that the landing runs through GSAP in main.js.
+  const revealing = document.querySelectorAll('[data-reveal]');
+  if (reduced.matches) revealing.forEach(element => element.classList.add('is-in'));
+  else {
+    const revealObserver = new IntersectionObserver(entries => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        revealObserver.unobserve(entry.target);
+        entry.target.classList.add('is-in');
+      }
+    }, { threshold: .15 });
+    revealing.forEach(element => revealObserver.observe(element));
+  }
+  document.querySelectorAll('[data-follow]').forEach(area => {
+    const images = area.querySelectorAll('img');
+    area.addEventListener('pointermove', event => {
+      if (event.pointerType !== 'mouse' || !finePointer.matches || reduced.matches || root.hasAttribute('data-motion-off')) return;
+      const box = area.getBoundingClientRect();
+      const x = Math.max(-1, Math.min(1, (event.clientX - box.left) / box.width * 2 - 1)) * 6;
+      const y = Math.max(-1, Math.min(1, (event.clientY - box.top) / box.height * 2 - 1)) * 5;
+      images.forEach(image => { image.style.setProperty('--fx', `${x.toFixed(2)}px`); image.style.setProperty('--fy', `${y.toFixed(2)}px`); });
+    });
+    area.addEventListener('pointerleave', () => images.forEach(image => { image.style.removeProperty('--fx'); image.style.removeProperty('--fy'); }));
+  });
+
+  // Demo form: the same rules and messages as the landing form, nothing is sent.
   const form = document.querySelector('#ds-form');
-  const phone = form.querySelector('[name=phone]');
+  const phone = form.elements.phone;
   phone.addEventListener('input', () => {
     let digits = phone.value.replace(/\D/g, '');
-    if (digits.startsWith('8') || digits.startsWith('7')) digits = digits.slice(1);
+    if (phone.value.startsWith('+7') || (digits.length === 11 && /^[78]/.test(digits))) digits = digits.slice(1);
     digits = digits.slice(0, 10);
-    const part = (start, end) => digits.slice(start, end);
-    let masked = '+7';
-    if (digits.length) masked += ` (${part(0, 3)}`;
-    if (digits.length >= 3) masked += `) ${part(3, 6)}`;
-    if (digits.length >= 6) masked += `-${part(6, 8)}`;
-    if (digits.length >= 8) masked += `-${part(8, 10)}`;
+    let masked = digits ? `+7 (${digits.slice(0, 3)}` : '';
+    if (digits.length >= 3) masked += ')';
+    if (digits.length > 3) masked += ` ${digits.slice(3, 6)}`;
+    if (digits.length > 6) masked += `-${digits.slice(6, 8)}`;
+    if (digits.length > 8) masked += `-${digits.slice(8, 10)}`;
     phone.value = masked;
   });
-  const undecided = form.querySelector('[value="Помогите определиться"]');
-  form.querySelectorAll('[name=interests]').forEach(box => box.addEventListener('change', () => {
-    if (!box.checked) return;
-    if (box === undecided) form.querySelectorAll('[name=interests]').forEach(other => { if (other !== box) other.checked = false; });
-    else undecided.checked = false;
-  }));
-  const setError = (input, message) => {
-    const error = document.getElementById(input.getAttribute('aria-describedby'));
-    input.toggleAttribute('aria-invalid', Boolean(message));
-    if (message) input.setAttribute('aria-invalid', 'true');
-    if (error) { error.textContent = message || ''; error.hidden = !message; }
-  };
+  const status = form.querySelector('.form-status');
+  form.addEventListener('change', event => {
+    if (event.target.name === 'interests' && event.target.checked) {
+      for (const field of form.querySelectorAll('[name="interests"]')) {
+        if (field !== event.target && (event.target.value === 'Помогите определиться' || field.value === 'Помогите определиться')) field.checked = false;
+      }
+    }
+  });
+  form.addEventListener('input', event => {
+    event.target.removeAttribute('aria-invalid');
+    status.textContent = '';
+  });
   form.addEventListener('submit', event => {
     event.preventDefault();
-    const name = form.querySelector('[name=name]');
-    const status = form.querySelector('.form-status');
-    const nameError = name.value.trim().length < 2 ? 'Введите имя' : '';
-    const phoneError = phone.value.replace(/\D/g, '').length !== 11 ? 'Введите номер полностью' : '';
-    const interests = form.querySelectorAll('[name=interests]:checked').length;
-    const consent = form.querySelector('[name=consent]').checked;
-    setError(name, nameError);
-    setError(phone, phoneError);
-    const interestField = form.querySelector('#ds-interests');
-    if (interests) interestField.removeAttribute('aria-invalid');
-    else interestField.setAttribute('aria-invalid', 'true');
-    if (nameError || phoneError || !interests || !consent) {
-      status.style.color = 'var(--error)';
-      status.textContent = !consent && !nameError && !phoneError && interests ? 'Подтвердите согласие на обработку данных' : 'Проверьте отмеченные поля';
-      (form.querySelector('[aria-invalid=true]') || form.querySelector('[name=consent]')).focus();
+    const group = form.querySelector('.product-field');
+    const checks = [
+      [form.elements.name, form.elements.name.value.trim().length >= 2],
+      [form.elements.phone, /^7\d{10}$/.test(phone.value.replace(/\D/g, ''))],
+      [form.elements.consent, form.elements.consent.checked],
+      [group, !!group.querySelector('input:checked')]
+    ];
+    checks.forEach(([field, valid]) => valid ? field.removeAttribute('aria-invalid') : field.setAttribute('aria-invalid', 'true'));
+    const [nameValid, phoneValid, consentValid] = checks.map(([, valid]) => valid);
+    const firstInvalid = checks.find(([, valid]) => !valid);
+    if (firstInvalid) {
+      status.textContent = !nameValid ? 'Укажите ваше имя.' : !phoneValid ? 'Введите номер полностью: 10 цифр после +7.' : !consentValid ? 'Отметьте согласие на обработку персональных данных.' : 'Выберите направление или «Помогите определиться».';
+      (firstInvalid[0] === group ? group.querySelector('input') : firstInvalid[0]).focus();
       return;
     }
-    status.style.color = '';
-    status.textContent = 'Это демонстрация: данные никуда не отправляются.';
+    status.textContent = 'Это демонстрация: заявка никуда не отправляется.';
   });
 })();

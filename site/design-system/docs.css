@@ -1,7 +1,7 @@
 /* Design system page chrome. Components live in brand.css; nothing here moves to the landing. */
 *,*::before,*::after{box-sizing:border-box}
 html{scroll-behavior:smooth;scroll-padding-top:28px;color-scheme:light;scrollbar-gutter:stable}
-body{margin:0;background:var(--white);color:var(--ink);font:300 16px/1.55 var(--body);-webkit-font-smoothing:antialiased}
+body{margin:0;padding-top:0;background:var(--white);color:var(--ink);font:300 16px/1.55 var(--body);-webkit-font-smoothing:antialiased}
 h1,h2,h3,h4,p,figure,blockquote,ul,ol,dl,dd{margin:0}
 ul,ol{padding:0;list-style:none}
 img{display:block;max-width:100%;height:auto}
@@ -16,10 +16,11 @@ code{font:400 12.5px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(-
 .skip-link:focus{transform:none}
 
 /* ---------- Cover: the brandbook front page ---------- */
-.ds-cover{--topo-radius:300px;padding-block:clamp(64px,11vw,148px)}
+/* The wordmark sits on the map itself: no panel, the lines run behind the letters. */
+.ds-cover{--topo-radius:300px;--topo-rest:.34;padding-block:clamp(72px,12vw,160px)}
 .ds-cover-panel{
   display:grid;gap:clamp(16px,2vw,24px);width:min(100%,940px);
-  padding:clamp(32px,5vw,64px) max(16px,var(--gutter));background:var(--green);color:var(--white)
+  padding-inline:max(16px,var(--gutter));color:var(--white)
 }
 .ds-cover-word{font:700 clamp(54px,8vw,108px)/.95 var(--heading);letter-spacing:.005em;text-transform:uppercase}
 .ds-cover-title{font:300 clamp(22px,2.6vw,34px)/1.2 var(--body);letter-spacing:0}
@@ -160,7 +161,7 @@ code{font:400 12.5px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(-
 .topo-tile .topo span{justify-self:start;padding:6px 12px;border-radius:var(--radius-pill);background:rgb(255 255 255 / .82);font:400 12px/1.3 var(--body);color:var(--ink)}
 .topo-tile h3{font:700 18px/1.2 var(--heading)}
 .trail-demo{display:grid;gap:10px;padding:clamp(20px,3vw,32px);border-radius:var(--radius-card);background:var(--cream)}
-.trail-demo .trail-rule{height:60px}
+.trail-demo .trail-rule{width:100%;height:60px}
 .trail-ends{display:flex;justify-content:space-between;font:400 13px/1.3 var(--body);color:var(--text-muted)}
 
 /* ---------- Grid & shape ---------- */
@@ -192,13 +193,12 @@ code{font:400 12.5px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(-
 .nav-demo{display:flex;flex-wrap:wrap;gap:8px 26px;font:400 14px/1.3 var(--body)}
 
 /* ---------- Form ---------- */
-.form-demo{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;max-width:640px;padding:clamp(24px,4vw,40px);border-radius:var(--radius-card);background:var(--cream)}
-.form-demo h3{grid-column:1/-1;text-align:center;font:700 clamp(28px,3vw,36px)/1.1 var(--heading);letter-spacing:-.03em}
-.form-demo .wide{grid-column:1/-1}
-.form-demo fieldset{border:0;padding:0;margin:0;min-width:0}
-.form-demo legend{padding:0;margin-bottom:10px;font:400 14px/1.5 var(--body)}
-.form-demo .form-submit{justify-self:center;min-width:220px}
+#ds-form{margin-inline:0}
+#ds-form h3{font-size:clamp(28px,3vw,36px)}
 .form-side{display:grid;gap:16px;align-content:start}
+.ds-error-demo{width:100%;padding:24px}
+.ds-error-demo .form-fields{grid-template-columns:minmax(0,1fr)}
+.ds-error-demo .form-status{text-align:left}
 
 /* ---------- Landing blocks ---------- */
 .spread{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px clamp(32px,5vw,72px);align-items:center;padding:clamp(24px,4vw,56px);border-radius:var(--radius-card);background:var(--sage)}
@@ -207,8 +207,8 @@ code{font:400 12.5px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(-
 .spread .models{justify-self:stretch}
 .contact-demo{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 24px;max-width:560px}
 .blocks-pair{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
-.plate .h2{max-width:24ch}
-.plate p{max-width:52ch}
+.ds-plate{display:grid;gap:18px;justify-items:start;padding:clamp(28px,4vw,48px)}
+.ds-plate p{max-width:52ch}
 
 /* ---------- Icons ---------- */
 .icon-set{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:16px}
@@ -301,8 +301,6 @@ code{font:400 12.5px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(-
   .proportion span{font-size:11px;padding:6px}
   .state-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .spec-cards{grid-template-columns:minmax(0,1fr)}
-  .form-demo{grid-template-columns:minmax(0,1fr);padding:24px 18px}
-  .form-demo .form-submit{justify-self:stretch;min-width:0}
   .contact-demo{grid-template-columns:minmax(0,1fr)}
   .icon-set{grid-template-columns:repeat(2,minmax(0,1fr))}
   .icon-item:last-child{grid-column:1/-1}
@@ -312,3 +310,71 @@ code{font:400 12.5px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(-
   .model{padding:12px 8px}
   .model-caption h3{font-size:clamp(11px,3vw,14px)}
 }
+
+/* ---------- Proposed and reference-only parts ----------
+   Not used on the landing yet. Move a rule into site/styles/design.css together
+   with the first block that needs it. */
+.topo-gray{--topo-ground:var(--gray)}
+.topo-green{--topo-ground:var(--green);--topo-ink:var(--white);--topo-rest:.3}
+.cta-light{position:relative;isolation:isolate;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:12px 24px;border-radius:var(--radius-pill);background:var(--cream);color:var(--ink);font:400 14px/1.4 var(--body);transition:background-color var(--duration-fast);--spot:var(--glow-warm)}
+.cta-light:hover{background:var(--white)}
+.cta-light:focus-visible{outline-color:var(--cream)}
+/* On the landing the pressed state comes from main.js; here CSS stands in for it. */
+.cta:active,.product-cta:active,.cta-light:active,.form-submit:active{scale:.97;transition:scale var(--duration-quick) var(--ease)}
+
+/* Type specimens */
+.display{font:700 var(--fs-display)/1.02 var(--heading);letter-spacing:-.045em;text-wrap:balance}
+.h1{font:700 var(--fs-h1)/1.05 var(--heading);letter-spacing:-.035em;text-wrap:balance}
+.h2{font:700 var(--fs-h2)/1.06 var(--heading);letter-spacing:-.035em;text-wrap:balance}
+.h3{font:700 var(--fs-h3)/1.08 var(--heading);letter-spacing:-.03em;text-wrap:balance}
+.h4{font:700 var(--fs-h4)/1.2 var(--heading);letter-spacing:-.02em}
+.lead{font:500 var(--fs-lead)/1.45 var(--heading);letter-spacing:-.005em;text-wrap:pretty}
+.text{font:300 var(--fs-body)/1.55 var(--body);text-wrap:pretty}
+.small{font:300 var(--fs-small)/1.5 var(--body)}
+.caption{font:300 var(--fs-caption)/1.4 var(--body);color:var(--text-muted)}
+.label{font:400 var(--fs-label)/1.4 var(--body)}
+.index-title{display:flex;align-items:baseline;gap:.28em;font:700 var(--fs-h2)/1 var(--heading);letter-spacing:-.03em}
+.index-title .index{color:var(--green);font-variant-numeric:oldstyle-nums}
+
+/* Dialogue bubbles from the brandbook introduction */
+.bubbles{display:grid;gap:10px}
+.bubble{max-width:min(100%,46ch);padding:9px 14px;border-radius:10px;font:300 15px/1.45 var(--body)}
+.bubble-q{justify-self:start;background:var(--gray);border-bottom-left-radius:3px}
+.bubble-a{justify-self:end;background:color-mix(in srgb,var(--sage) 70%,var(--white));border-bottom-right-radius:3px;text-align:right}
+
+/* Product stage for the brand spread demo; on the landing GSAP moves .product-visual img */
+.product-stage{display:grid;place-items:center;min-height:360px}
+.product-stage img{width:min(100%,var(--product-width,340px));height:auto;filter:var(--shadow-product);pointer-events:none;user-select:none;-webkit-user-drag:none;translate:var(--fx,0) var(--fy,0);transition:translate .55s var(--ease)}
+.spread .models{grid-template-columns:repeat(3,minmax(0,1fr))}
+.spread .model-caption h3{font-size:clamp(11px,1.05vw,15px);overflow-wrap:anywhere}
+
+/* Icons: linear, rounded ends, green circle badge */
+.icon{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;overflow:visible}
+.icon *{transform-box:view-box}
+.icon-badge{display:grid;place-items:center;width:56px;height:56px;border-radius:50%;background:var(--green);color:var(--cream)}
+.icon-badge .icon{width:28px;height:28px;stroke-width:1.6}
+.i-needle{transform-origin:12px 12px}
+.i-flag{transform-origin:9px 5.5px}
+.i-flame,.i-flame-in{transform-origin:12px 15.5px}
+@media(hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){
+  [data-icon]:hover .i-needle{animation:needle 1.1s var(--ease)}
+  [data-icon]:hover .i-flag{animation:flag .9s ease-in-out infinite alternate}
+  [data-icon]:hover .i-flame{animation:flame .7s ease-in-out infinite alternate}
+  [data-icon]:hover .i-flame-in{animation:flame .5s ease-in-out infinite alternate-reverse}
+  [data-icon]:hover .i-pin{animation:pin .6s var(--ease)}
+  [data-icon]:hover .i-steam{animation:steam 1.4s ease-out infinite}
+  [data-icon]:hover .i-sun{animation:sun .9s var(--ease) forwards}
+  [data-icon]:hover .i-route{animation:route-march 1s linear infinite}
+}
+@keyframes needle{0%{rotate:0deg}35%{rotate:28deg}65%{rotate:-12deg}100%{rotate:0deg}}
+@keyframes flag{from{transform:skewY(0deg) scaleX(1)}to{transform:skewY(-9deg) scaleX(.9)}}
+@keyframes flame{from{transform:scaleY(1)}to{transform:scaleY(1.12) scaleX(.94)}}
+@keyframes pin{0%,100%{translate:0 0}40%{translate:0 -3px}70%{translate:0 .5px}}
+@keyframes steam{0%{translate:0 1px;opacity:0}40%{opacity:1}100%{translate:0 -2.5px;opacity:0}}
+@keyframes sun{from{translate:0 0}to{translate:0 -3px}}
+@keyframes route-march{to{stroke-dashoffset:-8.8}}
+
+/* Entry on this page: visible at rest, a short rise on arrival (the landing uses GSAP for this) */
+.js-motion [data-reveal]:not(.is-in){opacity:.88;translate:0 16px}
+.js-motion [data-reveal]{transition:opacity .75s var(--ease),translate .75s var(--ease)}
+@media(prefers-reduced-motion:reduce){.js-motion [data-reveal]:not(.is-in){opacity:1;translate:none}}

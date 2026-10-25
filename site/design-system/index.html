@@ -9,9 +9,9 @@
 <link rel="icon" href="/assets/dao-mark.svg" type="image/svg+xml">
 <link rel="preload" href="/assets/fonts/ysabeau-office.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/fira-sans-light.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/design-system/brand.css">
+<link rel="stylesheet" href="/styles/design.css">
 <link rel="stylesheet" href="/design-system/docs.css">
-<script src="/design-system/effects.js" defer></script>
+<script src="/scripts/effects.js" defer></script>
 <script src="/design-system/docs.js" defer></script>
 </head>
 <body>
@@ -243,7 +243,7 @@
       </div>
       <div class="topo-tiles">
         <figure class="topo-tile">
-          <div class="topo" data-topo-lit><span>Серый, белые линии</span></div>
+          <div class="topo topo-gray" data-topo-lit><span>Серый, белые линии</span></div>
           <figcaption><h3>Первый экран</h3><p class="ds-note"><strong>На лендинге:</strong> фон hero. Класс <code>.topo</code>.</p></figcaption>
         </figure>
         <figure class="topo-tile">
@@ -261,12 +261,10 @@
         <div class="trail-demo">
           <svg class="trail-rule" data-trail viewBox="0 0 1000 60" preserveAspectRatio="none" aria-hidden="true">
             <path d="M6 44C120 40 170 12 300 18S470 52 590 40 780 6 994 14"/>
-            <circle class="trail-start" cx="6" cy="44" r="4"/>
-            <path class="trail-end" d="M992 14V-2l12 5-12 5z"/>
           </svg>
           <div class="trail-ends"><span>Первый экран</span><span>Форма заявки</span></div>
         </div>
-        <p class="ds-note">Пунктир рисуется один раз, когда попадает в экран, и начинает бежать при наведении. <strong>На лендинге:</strong> тонкий разделитель между направлениями и подчёркивание ссылок. Класс <code>.trail-rule</code>, атрибут <code>data-trail</code>.</p>
+        <p class="ds-note">Пунктир рисуется один раз, когда попадает в экран, и начинает бежать при наведении. <strong>На лендинге:</strong> маршрут между разделами от первого экрана до формы; направление чередуется, как серпантин. Классы <code>.section-trail .trail-rule</code>, атрибут <code>data-trail</code>.</p>
       </div>
 
       <div class="ds-rules">
@@ -365,48 +363,30 @@
     <section class="ds-chapter" id="forms" aria-labelledby="forms-title">
       <div class="ds-head">
         <h2 class="index-title" id="forms-title"><span class="index">07.</span> Формы</h2>
-        <p class="ds-intro">Подпись над полем, ошибка под ним, обязательные поля со звёздочкой, телефон с маской +7. Имена полей и порядок совпадают с контрактом формы, поэтому оформление можно менять, не трогая логику отправки.</p>
+        <p class="ds-intro">Подпись над полем, сообщение под формой, обязательные поля со звёздочкой, телефон с маской +7. Имена полей и порядок совпадают с контрактом формы, поэтому оформление можно менять, не трогая логику отправки.</p>
       </div>
       <div class="blocks-pair">
-        <form class="form-demo" id="ds-form" novalidate>
+        <form class="contact-form" id="ds-form" novalidate>
           <h3>Обсудить ваш проект</h3>
-          <label class="field" for="ds-name"><span>Имя <span class="required-mark" aria-hidden="true">*</span></span>
-            <input id="ds-name" name="name" autocomplete="name" maxlength="100" required aria-describedby="ds-name-error">
-            <span class="field-error" id="ds-name-error" hidden>Введите имя</span>
-          </label>
-          <label class="field" for="ds-phone"><span>Телефон <span class="required-mark" aria-hidden="true">*</span></span>
-            <input id="ds-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+7 (___) ___-__-__" required aria-describedby="ds-phone-error">
-            <span class="field-error" id="ds-phone-error" hidden>Введите номер полностью</span>
-          </label>
-          <fieldset class="wide" id="ds-interests">
-            <legend>Что вас интересует <span class="required-mark" aria-hidden="true">*</span></legend>
-            <div class="interest-grid">
-              <label class="interest-option"><input class="check" type="checkbox" name="interests" value="DrinkX"><span>DrinkX</span></label>
-              <label class="interest-option"><input class="check" type="checkbox" name="interests" value="Wendougee"><span>Wendougee</span></label>
-              <label class="interest-option"><input class="check" type="checkbox" name="interests" value="LinkBar"><span>LinkBar</span></label>
-              <label class="interest-option"><input class="check" type="checkbox" name="interests" value="Кофе и СТМ"><span>Кофе и СТМ</span></label>
-              <label class="interest-option"><input class="check" type="checkbox" name="interests" value="XLVI / Ceado"><span>XLVI / Ceado</span></label>
-              <label class="interest-option"><input class="check" type="checkbox" name="interests" value="Водоподготовка"><span>Водо&shy;подготовка</span></label>
-              <label class="interest-option"><input class="check" type="checkbox" name="interests" value="Комплектация"><span>Комплектация</span></label>
-              <label class="interest-option"><input class="check" type="checkbox" name="interests" value="Помогите определиться" checked><span>Помогите определиться</span></label>
-            </div>
-          </fieldset>
-          <label class="field wide" for="ds-comment"><span>Что вы планируете открыть или изменить?</span>
-            <textarea id="ds-comment" name="comment" rows="3" maxlength="1000" placeholder="Расскажите о формате проекта, городе и том, что хотите запустить или обновить"></textarea>
-          </label>
-          <label class="consent wide"><input class="check" id="ds-consent" name="consent" type="checkbox" required><span>Согласен на обработку персональных данных <span class="required-mark" aria-hidden="true">*</span></span></label>
-          <button class="form-submit wide" type="submit" data-spotlight>Отправить заявку</button>
-          <p class="form-status wide" role="status" aria-live="polite"></p>
+          <div class="form-fields">
+            <label>Имя <span class="required-mark" aria-hidden="true">*</span><input name="name" autocomplete="name" required maxlength="100"></label>
+            <label>Телефон <span class="required-mark" aria-hidden="true">*</span><input name="phone" type="tel" autocomplete="tel" inputmode="tel" placeholder="+7 (___) ___-__-__" required maxlength="30"></label>
+            <fieldset class="product-field"><legend>Что вас интересует <span class="required-mark" aria-hidden="true">*</span></legend><div class="interest-grid"><label class="interest-option"><input type="checkbox" name="interests" value="DrinkX"><span>DrinkX</span></label><label class="interest-option"><input type="checkbox" name="interests" value="Wendougee"><span>Wendougee</span></label><label class="interest-option"><input type="checkbox" name="interests" value="LinkBar"><span>LinkBar</span></label><label class="interest-option"><input type="checkbox" name="interests" value="Кофе и СТМ"><span>Кофе и СТМ</span></label><label class="interest-option"><input type="checkbox" name="interests" value="XLVI / Ceado"><span>XLVI / Ceado</span></label><label class="interest-option"><input type="checkbox" name="interests" value="Водоподготовка"><span>Водо&shy;подготовка</span></label><label class="interest-option"><input type="checkbox" name="interests" value="Комплектация"><span>Комплектация</span></label><label class="interest-option"><input type="checkbox" name="interests" value="Помогите определиться" checked><span>Помогите определиться</span></label></div></fieldset>
+            <label class="comment-field"><span class="comment-label">Что вы планируете открыть или изменить?</span><textarea name="comment" rows="3" maxlength="1000" placeholder="Расскажите о формате проекта, городе и том, что хотите запустить или обновить"></textarea></label>
+          </div>
+          <label class="consent"><input name="consent" type="checkbox" required><span>Согласен на обработку персональных данных&nbsp;<span class="required-mark" aria-hidden="true">*</span></span></label>
+          <button class="cta form-submit" type="submit" data-spotlight>Отправить заявку</button>
+          <p class="form-status" role="status" aria-live="polite"></p>
         </form>
         <div class="form-side">
-          <div class="ds-block ds-surface surface-sand">
+          <div class="ds-block">
             <h3 class="h4">Ошибка</h3>
-            <label class="field" for="ds-phone-bad"><span>Телефон <span class="required-mark" aria-hidden="true">*</span></span>
-              <input id="ds-phone-bad" type="tel" value="+7 (909) 422" aria-invalid="true" aria-describedby="ds-phone-bad-error" readonly>
-              <span class="field-error" id="ds-phone-bad-error">Введите номер полностью</span>
-            </label>
+            <div class="contact-form ds-error-demo">
+              <div class="form-fields"><label>Телефон <span class="required-mark" aria-hidden="true">*</span><input type="tel" value="+7 (909) 422" aria-invalid="true" readonly></label></div>
+              <p class="form-status">Введите номер полностью: 10 цифр после +7.</p>
+            </div>
           </div>
-          <div class="ds-rule do"><h4><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.2 4L19 7"/></svg>Правила формы</h4><ul><li>«Помогите определиться» снимает конкретные направления, а выбор направления снимает его.</li><li>В форме бренда выбор направления скрыт, вопрос относится к бренду.</li><li>Успех показываем только после ответа сервера. Пока отправки нет, форма честно об этом говорит.</li><li>Галочка рисуется слева направо, поле в фокусе получает мягкое зелёное кольцо.</li></ul></div>
+          <div class="ds-rule do"><h4><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.2 4L19 7"/></svg>Правила формы</h4><ul><li>«Помогите определиться» снимает конкретные направления, а выбор направления снимает его.</li><li>В форме бренда выбор направления скрыт, вопрос относится к бренду.</li><li>Успех показываем только после ответа сервера. Пока отправки нет, форма честно об этом говорит.</li><li>Галочка рисуется слева направо, поле в фокусе получает мягкое зелёное кольцо. Сообщение об ошибке краснеет, пока есть неверные поля.</li></ul></div>
         </div>
       </div>
     </section>
@@ -442,10 +422,9 @@
 
       <div class="ds-block">
           <h3 class="ds-sub">Компактный блок на плашке</h3>
-          <div class="plate topo topo-cream topo-trail" data-topo-lit>
-            <h2 class="h2">Подбор и комплектация оборудования для общепита</h2>
-            <p class="text">Индивидуально подбираем оборудование под заказ: столы, льдогенераторы, кондитерские витрины и другие позиции.</p>
-            <button class="product-cta" type="button" data-spotlight>Подбор и комплектация</button>
+          <div class="equipment-layout plate topo topo-cream topo-trail" data-topo-lit>
+            <header class="equipment-heading"><h2>Подбор и комплектация<br>оборудования для общепита</h2><p>Индивидуально подбираем оборудование под заказ: столы, льдогенераторы, кондитерские витрины и другие позиции.</p></header>
+            <div class="equipment-action"><button class="product-cta" type="button" data-spotlight>Подбор и комплектация</button></div>
           </div>
           <p class="ds-note"><strong>На лендинге:</strong> раздел «Комплектация». Заголовок, один абзац и кнопка, без карточек с преимуществами.</p>
       </div>
@@ -466,7 +445,7 @@
         </div>
         <div class="ds-block">
         <h3 class="ds-sub">Зелёная плашка</h3>
-        <div class="plate topo topo-green topo-trail" data-topo-lit>
+        <div class="plate ds-plate topo topo-green topo-trail" data-topo-lit>
           <h2 class="h3">Обсудить ваш проект</h2>
           <p class="text">Подбираем и поставляем оборудование разных брендов для кофеен, офисов и сетей.</p>
           <button class="cta-light" type="button" data-spotlight>Обсудить ваш проект</button>

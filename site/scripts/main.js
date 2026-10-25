@@ -52,6 +52,20 @@ menuButton.addEventListener('click', () => {
   }
 });
 
+// The direction in view is marked in both menus; the trail underline stays under it.
+const navLinks = Array.from(document.querySelectorAll('.desktop-nav a, .mobile-menu a'));
+const navSections = [...new Set(navLinks.map(link => link.hash))].map(hash => document.querySelector(hash)).filter(Boolean);
+const sectionsInView = new Set();
+const navObserver = new IntersectionObserver(entries => {
+  entries.forEach(entry => entry.isIntersecting ? sectionsInView.add(entry.target) : sectionsInView.delete(entry.target));
+  const current = navSections.find(section => sectionsInView.has(section));
+  navLinks.forEach(link => {
+    if (current && link.hash === `#${current.id}`) link.setAttribute('aria-current', 'location');
+    else link.removeAttribute('aria-current');
+  });
+}, { rootMargin: '-40% 0px -55% 0px' });
+navSections.forEach(section => navObserver.observe(section));
+
 // A shared light canvas; text stays the same dark green throughout the page.
 const stageSections = Array.from(document.querySelectorAll('[data-stage-color]'));
 const toRgb = hex => [1, 3, 5].map(offset => parseInt(hex.slice(offset, offset + 2), 16));
@@ -147,7 +161,8 @@ function finishPress(element, immediate = false) {
   }, immediate ? 0 : Math.max(0, 170 - (performance.now() - state.start)));
   if (activePress === element) activePress = undefined;
 }
-document.querySelectorAll('.cta,.product-cta,.dialog-close,.header-cta,.desktop-nav a,.mobile-menu a,.quiet-link,.scroll-cue,.back-top,.brand,.header-phone,.contact-links a,.menu-toggle').forEach(element => {
+// The logo is excluded: the brandbook allows no effects on it.
+document.querySelectorAll('.cta,.product-cta,.dialog-close,.desktop-nav a,.mobile-menu a,.menu-toggle').forEach(element => {
   element.addEventListener('pointerdown', event => {
     if (event.button === 0 && event.isPrimary) startPress(element);
   });
