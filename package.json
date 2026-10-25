@@ -1,0 +1,15 @@
+{
+  "name": "dao-coffee-landing",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "DAO COFFEE GROUP — корпоративный лендинг",
+  "scripts": {
+    "dev": "node scripts/serve.mjs",
+    "start": "node scripts/serve.mjs",
+    "check": "node --check site/scripts/main.js && node --check site/scripts/forms.js && node --check scripts/serve.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
