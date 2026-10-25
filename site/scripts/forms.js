@@ -388,7 +388,7 @@
       } else interestGroup.removeAttribute('aria-invalid');
       const status = form.querySelector('.form-status');
       if (invalid.length) {
-        status.textContent = !nameValid ? 'Укажите ваше имя.' : !phoneValid ? 'Введите номер полностью: 10 цифр после +7.' : !consentValid ? 'Отметьте согласие на обработку персональных данных.' : 'Выберите направление или «Помогите определиться».';
+        status.textContent = !nameValid ? 'Укажите ваше имя.' : !phoneValid ? 'Введите номер полностью: 10 цифр после +7.' : !consentValid ? 'Отметьте согласие на обработку персональных данных.' : 'Выберите направление или вариант «Нужен совет».';
         invalid[0].focus();
         return;
       }

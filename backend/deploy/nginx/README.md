@@ -1,14 +1,14 @@
 # Nginx и Node.js: шаблоны размещения
 
-Это локально подготовленные файлы, а не выполненная настройка сервера. Общий порядок релизов, настройки окружения и отката — в [backend/deploy/README.md](../README.md). Секреты здесь не хранятся. Grafana и остальные компоненты мониторинга не публикуются через этот Nginx.
+Шаблон HTTPS по IP установлен и проверен на VPS; доменный вариант предназначен для последующего переноса DNS. Фактический статус — в [STATUS.md](../STATUS.md), общий порядок релизов, окружения и отката — в [backend/deploy/README.md](../README.md). Секреты здесь не хранятся. Grafana и остальные компоненты мониторинга не публикуются через этот Nginx.
 
 ## Предпосылки
 
-- Поддерживаемая Linux-система с systemd. На новом VPS подтверждена Ubuntu 24.04.1 amd64; пути установки рассчитаны на пакетный Nginx Debian/Ubuntu и проверяются на целевом сервере.
-- Nginx не ниже 1.19.4 с HTTP SSL module и TLS 1.3: шаблон отклоняет неизвестный SNI через `ssl_reject_handshake`. Нужны обычные HTTP proxy, map и log modules.
+- Поддерживаемая Linux-система с systemd. На VPS подтверждена Ubuntu 24.04.5 amd64; пути установки рассчитаны на пакетный Nginx Debian/Ubuntu и проверяются на целевом сервере.
+- Nginx не ниже 1.19.4 с HTTP SSL module и TLS 1.3: доменный шаблон отклоняет неизвестный SNI через `ssl_reject_handshake`. IP-шаблон использует сертификат в default TLS vhost, поскольку при обращении по IP SNI обычно отсутствует. Нужны обычные HTTP proxy, map и log modules.
 - Для API нужен последний исправленный Node.js 24 LTS по пути `/usr/bin/node`. Версию нужно проверить до установки unit; Node из интерактивного `nvm`-профиля не используется.
 - Для API создаются системные пользователь и группа `dao-coffee`. Релиз доступен им на чтение в `/srv/dao-coffee/current`; менять релизы и системные конфиги этому пользователю нельзя. Для опубликованного сайта пользователь Nginx имеет доступ на чтение только к публичным файлам `site/` и ACME challenge. Начальный holding-конфиг не требует релиза или запущенного API.
-- Для публикации нужен один подтверждённый канонический домен; `APP_ORIGIN=https://этот-домен`. До подтверждения использовать holding-конфиг ниже. Шаблоны не добавляют `www` и другие имена автоматически. Никакого CDN/внешнего proxy перед Nginx в этой схеме нет. Глобальные `real_ip_header`, `set_real_ip_from` и другие настройки изменения `$remote_addr` необходимо проверить: доверять произвольным клиентским заголовкам нельзя.
+- Для публикации нужен один согласованный HTTPS-origin: канонический домен либо IP с доверенным сертификатом для проверки до DNS. `APP_ORIGIN` точно соответствует этому адресу. До разрешения публикации использовать holding-конфиг ниже. Шаблоны не добавляют `www` и другие имена автоматически. Никакого CDN/внешнего proxy перед Nginx в этой схеме нет. Глобальные `real_ip_header`, `set_real_ip_from` и другие настройки изменения `$remote_addr` необходимо проверить: доверять произвольным клиентским заголовкам нельзя.
 - Публичны TCP 80/443; административный SSH ограничен отдельно. API `127.0.0.1:4322`, Grafana, Prometheus и exporters остаются на loopback. IPv6 `listen` оставляют при доступном IPv6; запись AAAA публикуют только для работающего адреса.
 
 ## Назначение файлов
@@ -21,16 +21,31 @@
 | `dao-private-locations.conf` | Закрывает health, monitoring и dotfiles; `/etc/nginx/snippets/dao-private-locations.conf` |
 | `dao-site.conf` | Статика и точный маршрут API; `/etc/nginx/snippets/dao-site.conf` |
 | `dao-holding.conf` | HTTP-ответ `503` без домена, статики и API до согласования публикации |
+| `dao-http-preview.conf` | Временный просмотр статики по HTTP; API отвечает `503`, реальные формы не подключены |
 | `dao-http-bootstrap.conf.template` | Начальный HTTP vhost до выпуска сертификата |
 | `dao-https.conf.template` | Рабочие HTTP redirect и HTTPS vhost после выпуска сертификата |
+| `dao-ip-https.conf.template` | HTTPS по IPv4 до переноса DNS, рабочий API и HTTP-01 webroot |
 | `certbot-deploy-hook.sh` | Проверка Nginx и reload после успешного обновления сертификата |
 | `../systemd/dao-coffee-api.service` | Единственный Node-процесс; `/etc/systemd/system/dao-coffee-api.service` |
+| `../systemd/dao-certbot-renew.{service,timer}` | Продление через `/opt/dao-certbot`, дважды в день |
 
-`dao-holding.conf` не требует подстановки домена. Оба файла `*.template` содержат `__DAO_DOMAIN__`: заменить на проверенное DNS-имя во всех вхождениях, включая путь сертификата. Включается **только один** из трёх server-файлов под именем `/etc/nginx/sites-available/dao-coffee.conf`. Ссылка из `sites-enabled` указывает на него. Сначала проверить существующие vhosts: второй `default_server` на том же адресе/порту конфликтует с конфигурацией DAO. Не удалять чужую конфигурацию вслепую.
+`dao-holding.conf` и `dao-http-preview.conf` не требуют подстановки домена. Доменным шаблонам нужен `__DAO_DOMAIN__`: заменить на проверенное DNS-имя во всех вхождениях, включая путь сертификата. IP-шаблону нужен `__DAO_IPV4__`. Включается **только один** server-файл под именем `/etc/nginx/sites-available/dao-coffee.conf`. Ссылка из `sites-enabled` указывает на него. Сначала проверить существующие vhosts: второй `default_server` на том же адресе/порту конфликтует с конфигурацией DAO. Не удалять чужую конфигурацию вслепую.
 
 `dao-server-defaults.conf`, `dao-acme.conf`, `dao-private-locations.conf` и `dao-site.conf` — snippets, а не самостоятельные файлы для `/etc/nginx/conf.d/`: этот каталог обычно включается внутри `http {}`, где `location` недопустим. Для конфигурации без `sites-enabled` нужно включить подготовленный server-файл внутри `http {}` после `00-dao-logging.conf`.
 
-## До подтверждения домена
+## HTTPS по IP до переноса домена
+
+Этот вариант разрешён владельцем для удалённой проверки сайта и рабочих форм до смены DNS. Используется `dao-ip-https.conf.template`; HTTP перенаправляет на фиксированный HTTPS IP, служебные маршруты и `/design-system/` закрыты, `robots.txt` запрещает индексацию. Origin приложения — тот же HTTPS IP. Для другого IP сертификат нужно выпускать заново; доменный сертификат IP не покрывает.
+
+Согласно [инструкции Let's Encrypt](https://letsencrypt.org/2026/03/11/shorter-certs-certbot), для IP через webroot нужен Certbot не ниже 5.4 и профиль `shortlived`. На VPS установлен Certbot 5.8.0 из официального PyPI в root-owned venv `/opt/dao-certbot`; пакетный Certbot 2.9 остаётся установленным, но его timer отключён. Короткий срок IP-сертификата требует автоматического продления.
+
+Перед первым выпуском открыть HTTP-01 webroot `/var/lib/letsencrypt` через `dao-acme.conf` на порту 80. Не включать TLS-конфигурацию с ещё не существующими файлами сертификата. Выпустить сертификат через `/opt/dao-certbot/bin/certbot certonly --webroot --webroot-path /var/lib/letsencrypt --preferred-profile shortlived --ip-address <APPROVED_IPV4> --cert-name dao-ip`. Параметры регистрации ACME задаются оператором отдельно. Затем установить IP-шаблон, проверить `nginx -t` и включить HTTPS. Ключ находится только в `/etc/letsencrypt`.
+
+Установить root-owned `certbot-deploy-hook.sh` с режимом `0755` в `/etc/letsencrypt/renewal-hooks/deploy/dao-nginx-reload`. Установить `dao-certbot-renew.service` и `.timer`, выполнить `systemctl daemon-reload`, включить новый timer и отключить старый `certbot.timer`. Новый timer запускается дважды в день с задержкой до часа; это проверка срока, а не принудительный выпуск каждый раз. Ограничения service разрешают запись в каталоги Certbot, журналы Nginx и существующий `/run/nginx.pid`: эти пути нужны проверке `nginx -t` внутри deploy hook.
+
+Проверить `certbot renew --dry-run --run-deploy-hooks` через новый бинарник, выполнение hook с теми же systemd-ограничениями и запуск нового service. Одна успешная проверка HTTPS не подтверждает будущую работу продления. После переноса DNS выпустить доменный сертификат, заменить vhost на доменный шаблон и согласованно сменить `APP_ORIGIN` с перезапуском API; настройки CRM для этого менять не нужно.
+
+## До разрешения публикации
 
 На новом сервере можно запустить `dao-holding.conf` без DNS, сертификата, фронтенда и доступа к Bitrix24. Он принимает запросы с любым Host на порту 80: обычные пути, включая `/api/leads`, получают `503` и `Cache-Control: no-store`; dotfiles и служебные пути получают `404`. В нём нет `root`, `proxy_pass` и ACME location, поэтому сайт, заявки и файлы challenge не обслуживаются. Grafana остаётся доступной только через SSH-туннель.
 

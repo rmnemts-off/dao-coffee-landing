@@ -1,0 +1,42 @@
+# Replace __DAO_IPV4__ with the approved VPS IPv4 address.
+# An IP URL normally has no TLS SNI: its certificate must be on the default
+# TLS vhost. The domain template's default ssl_reject_handshake cannot be used.
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    server_name _;
+    include /etc/nginx/snippets/dao-server-defaults.conf;
+    return 444;
+}
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name __DAO_IPV4__;
+    include /etc/nginx/snippets/dao-server-defaults.conf;
+    include /etc/nginx/snippets/dao-acme.conf;
+    include /etc/nginx/snippets/dao-private-locations.conf;
+    location / { return 308 https://__DAO_IPV4__$request_uri; }
+}
+
+server {
+    listen 443 ssl default_server;
+    listen [::]:443 ssl default_server;
+    server_name __DAO_IPV4__;
+    include /etc/nginx/snippets/dao-server-defaults.conf;
+    ssl_certificate /etc/letsencrypt/live/dao-ip/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/dao-ip/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_session_cache shared:DAO_TLS:10m;
+    ssl_session_timeout 1d;
+    ssl_session_tickets off;
+    if ($host != __DAO_IPV4__) { return 444; }
+
+    location = /robots.txt {
+        default_type text/plain;
+        return 200 "User-agent: *\nDisallow: /\n";
+    }
+    location = /design-system { return 404; }
+    location ^~ /design-system/ { return 404; }
+    include /etc/nginx/snippets/dao-site.conf;
+}

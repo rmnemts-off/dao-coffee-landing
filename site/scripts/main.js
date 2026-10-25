@@ -129,6 +129,23 @@ reduced.addEventListener('change', () => {
   if (window.gsap) { gsap.killTweensOf(siteHeader); gsap.set(siteHeader, { yPercent: headerHidden ? -105 : 0 }); }
 });
 
+// One material at a time. CSS owns height; closed links leave the keyboard order.
+const materialItems = Array.from(document.querySelectorAll('.material-item.t-acc'));
+function setMaterialOpen(item, open) {
+  const head = item.querySelector('.t-acc-head');
+  const panel = item.querySelector('.t-acc-panel');
+  item.setAttribute('data-open', String(open));
+  head.setAttribute('aria-expanded', String(open));
+  panel.inert = !open;
+}
+materialItems.forEach(item => {
+  setMaterialOpen(item, false);
+  item.querySelector('.t-acc-head').addEventListener('click', () => {
+    const opening = item.getAttribute('data-open') !== 'true';
+    materialItems.forEach(other => setMaterialOpen(other, other === item && opening));
+  });
+});
+
 // A short press remains perceptible after a quick click, as in Total Stream.
 const pressEffects = new Map();
 let activePress;
@@ -141,7 +158,7 @@ function startPress(element) {
   previous?.animation?.cancel();
   const state = { start: performance.now(), held: true };
   element.setAttribute('data-pressed', '');
-  state.animation = element.animate([{ scale: current === 'none' ? '1' : current }, { scale: element.matches('.cta,.header-cta,.menu-toggle') ? '.97' : '.985' }], { duration: 150, easing: 'cubic-bezier(.2,.6,.2,1)', fill: 'forwards' });
+  state.animation = element.animate([{ scale: current === 'none' ? '1' : current }, { scale: element.matches('.cta,.header-cta,.menu-toggle,.brand') ? '.97' : '.985' }], { duration: 150, easing: 'cubic-bezier(.2,.6,.2,1)', fill: 'forwards' });
   pressEffects.set(element, state);
   activePress = element;
 }
@@ -161,8 +178,8 @@ function finishPress(element, immediate = false) {
   }, immediate ? 0 : Math.max(0, 170 - (performance.now() - state.start)));
   if (activePress === element) activePress = undefined;
 }
-// The logo is excluded: the brandbook allows no effects on it.
-document.querySelectorAll('.cta,.product-cta,.dialog-close,.desktop-nav a,.mobile-menu a,.menu-toggle').forEach(element => {
+// The header logo and contacts share the same subtle press, as requested.
+document.querySelectorAll('.cta,.product-cta,.desktop-nav a,.mobile-menu a,.menu-toggle,.brand,.contact-channel').forEach(element => {
   element.addEventListener('pointerdown', event => {
     if (event.button === 0 && event.isPrimary) startPress(element);
   });

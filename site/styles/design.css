@@ -43,6 +43,7 @@
   --header-height:clamp(4.25rem,3.6rem + 1vw,5.5rem);
   --ease:cubic-bezier(.22,1,.36,1);--duration-fast:250ms;--duration-quick:150ms;--duration-medium:350ms;--duration-slow:600ms;
   --modal-open-dur:250ms;--modal-close-dur:150ms;--modal-scale:.96;--modal-scale-close:.96;--modal-ease:cubic-bezier(.22,1,.36,1);
+  --acc-expand:250ms;--acc-collapse:250ms;--acc-chevron:250ms;--acc-ease:cubic-bezier(.22,1,.36,1);
 }
 *,*::before,*::after{box-sizing:border-box}
 html{scroll-behavior:smooth;scroll-padding-top:calc(var(--header-height) + 16px);scrollbar-gutter:stable;color-scheme:light}
@@ -103,11 +104,11 @@ a:hover>.trail-link::after,a:focus-visible>.trail-link::after,
   .trail-link:hover::after,a:hover>.trail-link::after,.desktop-nav a:hover::after,.contact-channel:hover .contact-value::after{animation:link-march .9s linear infinite}
 }
 
-/* ---------- Header: the logo keeps its proportions and has no effects ---------- */
+/* ---------- Header: original logo proportions; a subtle press on its link ---------- */
 .site-header{position:fixed;z-index:30;inset:0 0 auto;background:var(--gray);transition:background 250ms,box-shadow 250ms}
 .site-header[data-scrolled]{background:var(--gray);box-shadow:0 1px 0 rgb(25 62 50 / .12)}
 .header-main{display:flex;align-items:center;justify-content:space-between;gap:40px;min-height:var(--header-height);padding-block:10px}
-.brand{width:clamp(13.5rem,11rem + 3.6vw,18rem);flex:none}.brand img{width:100%}
+.brand{width:clamp(15.5rem,13rem + 3.6vw,20.5rem);flex:none;transform-origin:left center}.brand img{width:100%}
 .desktop-nav{display:flex;gap:clamp(18px,1.7vw,40px);align-items:center;justify-content:flex-end}
 .desktop-nav a{padding-block:14px;font-size:var(--fs-label);font-weight:400;white-space:nowrap;--trail-offset:8px}
 .menu-toggle{display:none;width:48px;height:48px;align-items:center;justify-content:center;gap:7px;flex-direction:column;background:transparent;padding:10px}
@@ -115,6 +116,14 @@ a:hover>.trail-link::after,a:focus-visible>.trail-link::after,
 .menu-toggle[aria-expanded=true] span:first-child{transform:translateY(4.25px) rotate(45deg)}.menu-toggle[aria-expanded=true] span:last-child{transform:translateY(-4.25px) rotate(-45deg)}
 .mobile-menu{position:absolute;top:100%;inset-inline:0;padding:16px var(--gutter) 28px;background:var(--gray);box-shadow:0 14px 18px rgb(4 6 6 / .06)}
 .mobile-menu nav{display:grid;grid-template-columns:1fr 1fr;gap:4px 24px}.mobile-menu a{justify-self:start;padding-block:12px;font-size:1.125rem;--trail-offset:8px}
+.desktop-nav a,.mobile-menu a,.contact-channel{transition:translate var(--duration-fast) var(--ease)}
+@media(hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){
+  .desktop-nav a:hover,.mobile-menu a:hover,.contact-channel:hover{translate:0 -2px}
+  .desktop-nav a[data-pressed],.mobile-menu a[data-pressed],.contact-channel[data-pressed]{translate:0 0}
+}
+@media(prefers-reduced-motion:no-preference){
+  .desktop-nav a:focus-visible,.mobile-menu a:focus-visible,.contact-channel:focus-visible{translate:0 -2px}
+}
 
 /* ---------- Hero: what the company does on the left, the equipment it supplies on the right ---------- */
 .hero{
@@ -134,7 +143,9 @@ a:hover>.trail-link::after,a:focus-visible>.trail-link::after,
 .hero-showcase::after{content:'';position:absolute;z-index:0;left:4%;right:2%;bottom:1%;height:9%;border-radius:50%;background:radial-gradient(closest-side,rgb(25 62 50 / .16),transparent);pointer-events:none}
 .showcase-item{position:absolute;z-index:1;display:block;border-radius:var(--radius-card)}
 .showcase-item img{width:100%;height:100%;object-fit:contain;filter:var(--shadow-product);pointer-events:none;user-select:none;-webkit-user-drag:none;transform-origin:50% 85%;transition:transform .6s var(--ease),filter .6s var(--ease)}
-.showcase-drinkx{left:30%;bottom:5%;width:52%;aspect-ratio:991/1331}
+.showcase-drinkx{left:32%;bottom:11%;width:52%;aspect-ratio:991/1331}
+/* Match the previous silhouette height while excluding the new PNG's transparent margins. */
+.showcase-drinkx img{position:absolute;top:-1.18%;height:104.05%;object-fit:cover}
 .showcase-ceado{z-index:2;right:0;bottom:6%;width:23%;aspect-ratio:429/1035}
 .showcase-wendougee{z-index:3;left:0;bottom:2%;width:57%;aspect-ratio:1400/872}
 
@@ -144,6 +155,8 @@ a:hover>.trail-link::after,a:focus-visible>.trail-link::after,
 .cta:hover{background:var(--green);color:var(--cream)}
 .product-cta{min-height:clamp(52px,3rem + .4vw,62px);padding:12px clamp(24px,1.3rem + .5vw,36px);background:var(--green);color:var(--cream);transition:background 200ms}
 .product-cta:hover{background:var(--ink)}
+.hero-cta{background:var(--green);color:var(--cream)}
+.hero-cta:hover{background:var(--ink);border-color:var(--ink);color:var(--cream)}
 
 /* ---------- Brand sections: big picture on one side, title and copy on the other ---------- */
 .product-section{position:relative;padding-block:var(--section-pad);background:var(--sand)}
@@ -247,10 +260,37 @@ a:hover>.trail-link::after,a:focus-visible>.trail-link::after,
 
 /* ---------- Equipment brief: open on the page, the items arrive one by one ---------- */
 .equipment-section{position:relative;padding-block:var(--section-pad);background:var(--sand)}
-.equipment-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);align-items:center;gap:clamp(32px,4vw,104px)}
-.equipment-heading h2{font-size:var(--fs-h2);line-height:1.04;letter-spacing:-.035em}
-.equipment-heading>p{max-width:34ch;margin-top:clamp(18px,1.6vw,28px);font:500 var(--fs-lead)/1.4 var(--heading);text-wrap:pretty}
+.equipment-layout{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);align-items:stretch;gap:clamp(32px,4vw,104px)}
+.equipment-heading h2{font-size:clamp(2.25rem,1.2rem + 2.8vw,4.5rem);line-height:1.06;letter-spacing:-.035em}
+.equipment-heading>p{max-width:44ch;margin-top:clamp(18px,1.6vw,28px);font:500 var(--fs-lead)/1.4 var(--heading);text-wrap:pretty}
 .equipment-action{margin-top:clamp(28px,2.4vw,44px)}
+.materials{min-width:0;padding:clamp(20px,1.6vw,28px);background:var(--cream);border-radius:var(--radius-card)}
+.materials>h3{margin-bottom:16px;font-size:clamp(1.75rem,1.4rem + 1.1vw,2.5rem);line-height:1.1;letter-spacing:-.025em}
+.material-item{border-bottom:1px solid var(--line)}
+.material-item+.material-item{margin-top:4px}
+.material-item:last-child{border-bottom:0}
+.material-item h4{margin:0;font-weight:inherit}
+.t-acc-head{display:flex;align-items:center;justify-content:space-between;gap:16px;width:100%;padding:18px 0;background:transparent;text-align:left;font:500 clamp(1.1875rem,1.02rem + .45vw,1.5rem)/1.3 var(--heading);color:var(--ink);transition:color var(--duration-fast)}
+.t-acc-head:hover{color:var(--green)}
+.t-acc-head:focus-visible{outline:none}
+.t-acc-head:focus-visible>span:first-child{text-decoration:underline;text-underline-offset:4px;text-decoration-thickness:1px}
+.t-acc-head>span:first-child{min-width:0;transition:transform 460ms cubic-bezier(.4,0,.2,1)}
+.material-item[data-open="true"] .t-acc-head{color:var(--green)}
+.material-item[data-open="true"] .t-acc-head>span:first-child{transform:translateX(6px)}
+.material-icon{position:relative;display:block;flex:none;width:18px;height:18px;color:var(--green);transition:transform 460ms cubic-bezier(.4,0,.2,1)}
+.material-icon::before,.material-icon::after{content:'';position:absolute;background:currentColor;border-radius:2px;pointer-events:none}
+.material-icon::before{left:0;right:0;top:calc(50% - .75px);height:1.5px}
+.material-icon::after{top:0;bottom:0;left:calc(50% - .75px);width:1.5px}
+.material-item[data-open="true"] .material-icon{transform:rotate(45deg)}
+.t-acc-chevron{width:24px;height:24px;flex:none;align-items:center;justify-content:center}
+.t-acc-chevron svg{width:16px;height:16px}
+.t-acc-panel-inner{min-height:0}
+.material-body{padding:0 6px 22px;font-size:var(--fs-fact);line-height:1.5}
+.material-body a{display:inline-block;margin-top:16px;font-size:var(--fs-label);font-weight:400}
+@media(prefers-reduced-motion:reduce){
+  .t-acc-head>span:first-child{transform:none!important}
+  .material-icon{transition:none!important}
+}
 /* Each item rises out of its line, then the rule under it draws from left to right */
 .equipment-list{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
 .equipment-list li{position:relative;overflow:hidden;padding-block:clamp(14px,1.3vw,26px);font:700 var(--fs-h3)/1.1 var(--heading);letter-spacing:-.03em}
@@ -271,11 +311,62 @@ a:hover>.trail-link::after,a:focus-visible>.trail-link::after,
   text-shadow:0 0 .05em var(--halo),0 0 .1em var(--halo),0 0 .18em var(--halo),0 0 .3em var(--halo),0 0 .45em var(--halo)
 }
 
+/* Accordion expand recipe from Transitions.dev. */
+/* grid-template-rows 0fr → 1fr gives a clean height animation
+   with no JS measurement; the inner element clips overflow. */
+.t-acc-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--acc-collapse) var(--acc-ease);
+}
+.t-acc[data-open="true"] .t-acc-panel {
+  grid-template-rows: 1fr;
+  transition: grid-template-rows var(--acc-expand) var(--acc-ease);
+}
+.t-acc-panel-inner {
+  overflow: hidden;
+  opacity: 0;
+  filter: blur(2px);
+  transition:
+    opacity var(--acc-collapse) var(--acc-ease),
+    filter var(--acc-collapse) var(--acc-ease);
+}
+.t-acc[data-open="true"] .t-acc-panel-inner {
+  opacity: 1;
+  filter: blur(0);
+  transition:
+    opacity var(--acc-expand) var(--acc-ease),
+    filter var(--acc-expand) var(--acc-ease);
+}
+/* Flip the chevron vertically to turn the "v" into a "^".
+   scaleY(-1) about the centre passes through a flat line at
+   the midpoint (same look as a `d:` path morph) but animates
+   in every browser, unlike CSS `d:` morphing (Chromium only).
+   The chevron path is symmetric about the 16x16 viewBox
+   centre, so the flip lands exactly on the "^"; non-scaling
+   -stroke keeps the stroke width constant through the flip. */
+.t-acc-chevron {
+  display: inline-flex;
+  transform: scaleY(1);
+  transform-origin: center;
+  transition: transform var(--acc-chevron) var(--acc-ease);
+}
+.t-acc-chevron path { vector-effect: non-scaling-stroke; }
+.t-acc[data-open="true"] .t-acc-chevron {
+  transform: scaleY(-1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t-acc-panel, .t-acc-panel-inner, .t-acc-chevron {
+    transition: none !important;
+  }
+}
+
 /* ---------- Founder and enquiry form ---------- */
 .contact-section{position:relative;padding-block:var(--section-pad);background:var(--sage)}
-.contact-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:var(--column-gap);align-items:start}
+.contact-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:var(--column-gap);align-items:stretch}
 .contact-layout>.contact-form{margin-inline:auto 0}
-.founder-profile{display:grid;gap:clamp(24px,2.4vw,44px);min-width:0}
+.founder-profile{display:grid;grid-template-columns:minmax(0,1fr);gap:clamp(24px,2.4vw,44px);min-width:0;align-content:start}
 .founder-head{display:grid;grid-template-columns:clamp(9rem,5rem + 8vw,15rem) minmax(0,1fr);gap:clamp(18px,2vw,40px);align-items:end}
 .founder-photo{position:relative;width:100%;aspect-ratio:4/5;overflow:hidden;border-radius:var(--radius-card)}
 /* Scratch-off cover drawn by effects.js; without scripts the photo is simply visible */
@@ -340,12 +431,37 @@ a:hover>.trail-link::after,a:focus-visible>.trail-link::after,
 .selected-model{margin-top:16px;padding:12px 14px;background:var(--sage);border-radius:var(--radius-field);font-size:var(--fs-label)}.required-mark{font-weight:400}
 .contact-form [aria-invalid=true]{border-color:var(--error)!important;outline-color:var(--error)!important}
 .product-field[aria-invalid=true] .interest-option{border-color:var(--error)}
-.project-dialog{width:min(46rem,calc(100% - 32px));max-height:calc(100dvh - 32px);margin:auto;border:0;border-radius:var(--radius-card);padding:0;background:var(--cream);color:var(--ink);overflow:auto;overscroll-behavior:contain}
+.project-dialog{width:min(42rem,calc(100% - 32px));max-height:calc(100dvh - 24px);margin:auto;border:0;border-radius:var(--radius-card);padding:0;background:var(--cream);color:var(--ink);overflow:auto;overscroll-behavior:contain}
 .project-dialog::backdrop{background:rgb(4 6 6 / .46)}
-.dialog-shell{position:relative;padding:12px clamp(24px,1rem + 2vw,48px) clamp(24px,1rem + 2vw,44px)}
-.dialog-close{display:grid;place-items:center;width:44px;height:44px;margin-left:auto;position:sticky;z-index:2;top:8px;background:var(--cream);border-radius:50%;transition:background var(--duration-fast)}.dialog-close:hover{background:var(--sage)}
-.dialog-close svg{width:22px;height:22px}
-.project-dialog .contact-form{width:100%;padding:4px 0 0}
+.dialog-shell{position:relative;padding:24px 28px}
+.dialog-close{display:grid;place-items:center;position:absolute;z-index:2;top:20px;right:24px;width:40px;height:40px;padding:0;border:1px solid var(--line);background:transparent;border-radius:50%;color:var(--ink);transition:background var(--duration-quick),border-color var(--duration-quick)}
+.dialog-close:hover{background:var(--sage);border-color:var(--field-border)}
+.dialog-close:active{background:var(--gray)}
+.dialog-close svg{width:20px;height:20px;stroke-width:1.75}
+.project-dialog .contact-form{width:100%;padding:0}
+.project-dialog .contact-form h3{padding-right:48px;margin-bottom:18px;font-size:34px;line-height:1.12;text-align:left}
+.project-dialog .form-fields{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 14px}
+.project-dialog .form-fields label,.project-dialog .product-field legend{font-size:15px;line-height:1.35}
+.project-dialog .contact-form input:not([type=checkbox]):not([type=hidden]){min-height:44px;margin-top:6px;padding:10px 12px;font-size:16px}
+.project-dialog .product-field legend{margin-bottom:8px}
+.project-dialog .interest-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 8px}
+.project-dialog .form-fields .interest-option{min-height:40px;gap:8px;padding:6px 10px;font-size:14px;line-height:1.3}
+.project-dialog .contact-form textarea{min-height:72px;height:72px;margin-top:6px;padding:10px 12px;font-size:16px}
+.project-dialog .consent{gap:10px;margin:14px 0;font-size:13.5px;line-height:1.4}
+.project-dialog .form-submit{width:100%;min-height:48px;padding:12px 20px}
+.project-dialog .form-status{margin-top:10px;font-size:14px;line-height:1.4}
+
+/* Compact inline form follows the height of the founder and contacts column. */
+.contact-layout>.contact-form{display:flex;flex-direction:column;padding:clamp(24px,2vw,36px)}
+.contact-layout>.contact-form h3{margin-bottom:20px}
+.contact-layout>.contact-form .form-fields{row-gap:14px}
+.contact-layout>.contact-form input:not([type=checkbox]):not([type=hidden]){min-height:48px;padding:10px 14px}
+.contact-layout>.contact-form .product-field legend{margin-bottom:8px}
+.contact-layout>.contact-form .interest-grid{gap:8px}
+.contact-layout>.contact-form .interest-option{min-height:42px;padding-block:7px}
+.contact-layout>.contact-form textarea{min-height:88px;height:88px;padding:10px 14px}
+.contact-layout>.contact-form .consent{margin: auto 0 16px;padding-top:16px}
+.contact-layout>.contact-form .form-submit{width:100%;min-height:52px;padding-block:12px}
 
 /* Modal recipe from Transitions.dev; native dialog supplies focus and top layer. */
 .t-modal {
@@ -385,6 +501,10 @@ a:hover>.trail-link::after,a:focus-visible>.trail-link::after,
 @media(max-width:1280px){
   .desktop-nav{display:none}.menu-toggle{display:flex}.header-main{gap:24px}
 }
+@media(max-width:360px){
+  .header-main{gap:12px;padding-inline:16px}.brand{max-width:calc(100% - 60px)}.menu-toggle{flex:none}
+}
+@media(min-width:361px) and (max-width:640px){.brand{max-width:calc(100% - 72px)}.menu-toggle{flex:none}}
 /* Tablets and phones: one column, the title first, the picture right under it. */
 @media(max-width:960px){
   .editorial-grid,.product-reverse .editorial-grid{grid-template-columns:minmax(0,1fr);grid-template-rows:none;grid-template-areas:"heading" "visual" "copy" "lineup";row-gap:clamp(20px,3vw,32px)}
@@ -422,13 +542,27 @@ a:hover>.trail-link::after,a:focus-visible>.trail-link::after,
   .interest-grid{gap:8px}
   .form-fields .interest-option{gap:8px;min-height:46px;padding:7px 8px;font-size:.84375rem}
   .interest-option span{hyphens:manual}
-  .project-dialog{width:calc(100% - 24px);max-height:calc(100dvh - 24px)}.dialog-shell{padding:8px 20px 24px}
+  .project-dialog{width:calc(100% - 24px);max-height:calc(100dvh - 24px)}
+  .dialog-shell{padding:20px}
+  .dialog-close{top:16px;right:16px}
+  .project-dialog .contact-form h3{font-size:28px;margin-bottom:14px}
+  .project-dialog .form-fields{grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:10px}
+  .project-dialog .form-fields label,.project-dialog .product-field legend{font-size:14px}
+  .project-dialog .contact-form input:not([type=checkbox]):not([type=hidden]){padding-inline:8px}
+  .project-dialog .form-fields .interest-option{padding:6px 7px;font-size:13px;gap:6px;min-height:38px}
+  .project-dialog .contact-form textarea{min-height:92px;height:92px;padding:8px 10px}
+  .project-dialog .consent{margin:12px 0;font-size:13px}
+  .project-dialog .form-submit{min-height:44px;padding-block:10px}
+  .equipment-heading h2{font-size:clamp(1.625rem,7.6vw,2.5rem)}
   .footer-copyright{width:100%;margin-left:0;text-align:left}
 }
 /* "Автоматизация" is the longest word on the page; on narrow phones it follows the screen width. */
 @media(max-width:400px){:root{--fs-hero:13.4vw}}
 @media(max-width:360px){
   .interest-grid{grid-template-columns:minmax(0,1fr)}
+  .project-dialog .dialog-shell{padding:16px}
+  .project-dialog .dialog-close{top:12px;right:12px}
+  .project-dialog .contact-form h3{font-size:25px}
   .founder-head{grid-template-columns:minmax(0,1fr)}
   .founder-photo{max-width:12rem}
 }
