@@ -51,9 +51,12 @@ server {{
         raise ValueError('IP template changed; review the migration renderer')
     final = ip_config.split(marker)[0].replace(
         f'return 308 https://{address}$request_uri;',
-        f'return 308 https://{domain}$request_uri;')
+        f'add_header Cache-Control no-store always; return 307 https://{domain}$request_uri;')
     final += f'''    include /etc/nginx/snippets/dao-private-locations.conf;
-    location / {{ return 308 https://{domain}$request_uri; }}
+    location / {{
+        add_header Cache-Control no-store always;
+        return 307 https://{domain}$request_uri;
+    }}
 }}
 '''
     final += domain_http.replace(
@@ -88,7 +91,7 @@ server {{
 '''
     rollback = ip_config + domain_http.replace(
         'return 503 "Domain HTTPS setup is in progress.\\n";',
-        f'return 308 https://{address}$request_uri;')
+        f'return 307 https://{address}$request_uri;')
     rollback += f'''
 server {{
     listen 443 ssl;
@@ -96,7 +99,10 @@ server {{
     server_name {names};
     include /etc/nginx/snippets/dao-server-defaults.conf;
 {tls}    include /etc/nginx/snippets/dao-private-locations.conf;
-    location / {{ return 308 https://{address}$request_uri; }}
+    location / {{
+        add_header Cache-Control no-store always;
+        return 307 https://{address}$request_uri;
+    }}
 }}
 '''
     return {'domain': domain, 'aliases': aliases, 'ipv4': address,

@@ -59,9 +59,19 @@ class DomainMigrationTests(unittest.TestCase):
         self.assertIn('server_name coffee.example www.coffee.example;', text)
         self.assertEqual(text.count('include /etc/nginx/snippets/dao-acme.conf;'), 2)
         self.assertEqual(text.count('include /etc/nginx/snippets/dao-site.conf;'), 1)
-        self.assertIn('return 308 https://203.0.113.10$request_uri;', text)
+        self.assertIn('return 307 https://203.0.113.10$request_uri;', text)
         self.assertNotIn('return 503', text)
         self.assertNotIn('ssl_reject_handshake on;', text)
+
+    def test_reversible_redirects_cannot_be_cached_as_permanent(self):
+        bundle = module.render('coffee.example', ['www.coffee.example'], '203.0.113.10')
+        ip_redirects = bundle['https'].split('server_name coffee.example')[0]
+        self.assertEqual(ip_redirects.count('return 307 https://coffee.example$request_uri;'), 2)
+        self.assertEqual(ip_redirects.count('add_header Cache-Control no-store always;'), 2)
+        domain_rollback = bundle['rollback'].split('server_name coffee.example', 1)[1]
+        self.assertEqual(domain_rollback.count('return 307 https://203.0.113.10$request_uri;'), 2)
+        self.assertEqual(domain_rollback.count('add_header Cache-Control no-store always;'), 2)
+        self.assertNotIn('return 308', domain_rollback)
 
 
 class DomainPreflightTests(unittest.TestCase):
