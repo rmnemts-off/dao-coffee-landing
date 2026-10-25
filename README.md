@@ -4,7 +4,7 @@
 
 ## Запуск
 
-Node.js 22.9 или новее. Для статического просмотра и рабочего API внешние npm-зависимости не нужны. DOM-тесты используют dev-зависимость jsdom (`npm ci`).
+Node.js 22.13 или новее; для production — Node.js 24 LTS. Для статического просмотра и рабочего API внешние npm-зависимости не нужны. DOM-тесты используют dev-зависимость jsdom (`npm ci`).
 
 ```sh
 git clone https://github.com/rmnemts-off/dao-coffee-landing.git
@@ -27,6 +27,7 @@ npm run check
 - `site/index.html` — редактируемая исходная страница, без шага генерации.
 - `site/styles/design.css` — единственный подключённый CSS: палитра, локальные шрифты, композиция, адаптивность, формы.
 - `site/scripts/main.js` — меню, шапка, смена общего фона и анимации.
+- `backend/store.mjs`, `backend/delivery.mjs` — постоянный журнал заявок SQLite, ключи повторов и восстановление результата CRM; схема описана в [CRM_DATA_FLOW.md](docs/CRM_DATA_FLOW.md).
 - `site/scripts/forms.js` — модальное окно, контекст заявки, черновики в памяти, маска телефона, валидация и отправка на `/api/leads` с состояниями ожидания/успеха/ошибки.
 - `backend/` — API, адаптер Bitrix24, mock preview, тесты и инструкция размещения.
 - `backend/deploy/` — Nginx, systemd, процедура ручного выпуска и закрытый мониторинг Grafana/Prometheus; конфигурация сама ничего не публикует.

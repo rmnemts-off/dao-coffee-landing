@@ -2,7 +2,9 @@ import http from 'node:http';
 import { isIP } from 'node:net';
 import { pathToFileURL } from 'node:url';
 import { createLeadService, failure } from './leads.mjs';
-import { bitrixConfig, createBitrixSender } from './bitrix.mjs';
+import { bitrixConfig, createBitrixSender, createBitrixReconciler } from './bitrix.mjs';
+import { openLeadStore } from './store.mjs';
+import { createPersistentLeadService } from './delivery.mjs';
 
 function parseOrigin(value) {
   try {
@@ -52,9 +54,15 @@ function readBody(request, maxBytes, timeoutMs) {
 export function createServer({ env = process.env, send,
   serviceOptions = {}, maxBytes = 8192, bodyTimeoutMs = 5000, serveStatic } = {}) {
   const configuredSender = Boolean(bitrixConfig(env));
-  const service = createLeadService({ ...serviceOptions, send: send ?? createBitrixSender({ env }) });
+  // Real CRM delivery always requires a persistent local journal. Mock preview may be memory-only.
+  const persistent = Boolean(env.LEADS_DB_PATH);
+  const store = persistent ? openLeadStore(env.LEADS_DB_PATH) : null;
+  const options = { ...serviceOptions, send: send ?? createBitrixSender({ env }) };
+  const service = persistent
+    ? createPersistentLeadService({ ...options, store, reconcile: serviceOptions.reconcile ?? createBitrixReconciler({ env }) })
+    : createLeadService(options);
   const appOrigin = parseOrigin(env.APP_ORIGIN);
-  const configured = (typeof send === 'function' || configuredSender) && (!env.APP_ORIGIN || Boolean(appOrigin)) &&
+  const configured = (typeof send === 'function' || (configuredSender && persistent && env.LEADS_DB_PATH !== ':memory:')) && (!env.APP_ORIGIN || Boolean(appOrigin)) &&
     (env.NODE_ENV !== 'production' || appOrigin?.startsWith('https://'));
   let draining = false;
   let activeHandlers = 0;
@@ -101,7 +109,7 @@ export function createServer({ env = process.env, send,
       let body;
       try { body = await readBody(request, maxBytes, bodyTimeoutMs); }
       catch (error) { response.setHeader('Connection', 'close'); return reply(response, error); }
-      const result = await service.submit(body);
+      const result = await service.submit(body, request.headers['idempotency-key']);
       if (draining) response.setHeader('Connection', 'close');
       return reply(response, result);
     } catch {
@@ -110,8 +118,13 @@ export function createServer({ env = process.env, send,
     } finally {
       activeHandlers--;
       finishIfDrained();
+      if (listenerClosed && activeHandlers === 0) closeStore();
     }
   });
+  // Close the journal only after all handlers, including disconnected clients, finish.
+  let storeClosed = false;
+  const closeStore = () => { if (store && !storeClosed) { storeClosed = true; store.close(); } };
+  server.on('close', () => { if (activeHandlers === 0) closeStore(); });
   server.headersTimeout = 10_000;
   server.requestTimeout = 15_000;
   server.maxRequestsPerSocket = 100;
@@ -142,7 +155,7 @@ export function createServer({ env = process.env, send,
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  if (process.env.NODE_ENV === 'production' && (!bitrixConfig(process.env) || !parseOrigin(process.env.APP_ORIGIN)?.startsWith('https://'))) {
+  if (process.env.NODE_ENV === 'production' && (!bitrixConfig(process.env) || !process.env.LEADS_DB_PATH || process.env.LEADS_DB_PATH === ':memory:' || !parseOrigin(process.env.APP_ORIGIN)?.startsWith('https://'))) {
     console.error('Missing production configuration. See backend/README.md.');
     process.exitCode = 1;
   } else {

@@ -19,7 +19,7 @@ if (!['delivered', 'rejected', 'uncertain', 'unconfigured'].includes(mode)) thro
 const root = await realpath(fileURLToPath(new URL('../site/', import.meta.url)));
 const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.webp': 'image/webp', '.png': 'image/png', '.jpg': 'image/jpeg', '.woff2': 'font/woff2' };
 const delivery = live ? { env: { ...process.env, APP_ORIGIN: origin, TRUST_LOOPBACK_PROXY: '' } }
-  : { env: {}, send: async () => { await delay(750); return { kind: mode }; } };
+  : { env: { LEADS_DB_PATH: ':memory:' }, send: async () => { await delay(750); return { kind: mode }; } };
 const server = createServer({ ...delivery,
   serveStatic: async (request, response) => {
     if (!['GET', 'HEAD'].includes(request.method)) { response.writeHead(405, { Allow: 'GET, HEAD' }).end(); return; }

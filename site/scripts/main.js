@@ -52,6 +52,20 @@ menuButton.addEventListener('click', () => {
   }
 });
 
+// The direction in view is marked in both menus; the trail underline stays under it.
+const navLinks = Array.from(document.querySelectorAll('.desktop-nav a, .mobile-menu a'));
+const navSections = [...new Set(navLinks.map(link => link.hash))].map(hash => document.querySelector(hash)).filter(Boolean);
+const sectionsInView = new Set();
+const navObserver = new IntersectionObserver(entries => {
+  entries.forEach(entry => entry.isIntersecting ? sectionsInView.add(entry.target) : sectionsInView.delete(entry.target));
+  const current = navSections.find(section => sectionsInView.has(section));
+  navLinks.forEach(link => {
+    if (current && link.hash === `#${current.id}`) link.setAttribute('aria-current', 'location');
+    else link.removeAttribute('aria-current');
+  });
+}, { rootMargin: '-40% 0px -55% 0px' });
+navSections.forEach(section => navObserver.observe(section));
+
 // A shared light canvas; text stays the same dark green throughout the page.
 const stageSections = Array.from(document.querySelectorAll('[data-stage-color]'));
 const toRgb = hex => [1, 3, 5].map(offset => parseInt(hex.slice(offset, offset + 2), 16));
@@ -147,7 +161,8 @@ function finishPress(element, immediate = false) {
   }, immediate ? 0 : Math.max(0, 170 - (performance.now() - state.start)));
   if (activePress === element) activePress = undefined;
 }
-document.querySelectorAll('.cta,.product-cta,.dialog-close,.header-cta,.desktop-nav a,.mobile-menu a,.quiet-link,.scroll-cue,.back-top,.brand,.header-phone,.contact-links a,.menu-toggle').forEach(element => {
+// The logo is excluded: the brandbook allows no effects on it.
+document.querySelectorAll('.cta,.product-cta,.dialog-close,.desktop-nav a,.mobile-menu a,.menu-toggle').forEach(element => {
   element.addEventListener('pointerdown', event => {
     if (event.button === 0 && event.isPrimary) startPress(element);
   });
@@ -193,65 +208,5 @@ if (window.gsap) {
       gsap.set(elements, { clearProps: 'transform,opacity' });
     };
   });
-
-  // Each product has its own stable hover area, including the two Italian products.
-  media.add('(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)', () => {
-    const cleanups = [];
-    const resets = [];
-    const images = [];
-    const motionAreas = Array.from(document.querySelectorAll('.product-visual')).flatMap(figure => {
-      const pieces = Array.from(figure.querySelectorAll('.italian-piece'));
-      return pieces.length ? pieces : [figure];
-    });
-    motionAreas.forEach(area => {
-      const targets = Array.from(area.querySelectorAll('img'));
-      if (!targets.length) return;
-      images.push(...targets);
-      const movers = targets.map(image => ({
-        x: gsap.quickTo(image, 'x', { duration: .55, ease: 'power3.out' }),
-        y: gsap.quickTo(image, 'y', { duration: .55, ease: 'power3.out' })
-      }));
-      let bounds;
-      let active = false;
-      const move = event => {
-        if (event.pointerType !== 'mouse' && event.pointerType !== 'pen') return;
-        // Read once on entry; scrolling/resizing invalidates this rectangle below.
-        bounds ||= area.getBoundingClientRect();
-        if (!bounds.width || !bounds.height) return;
-        active = true;
-        const x = gsap.utils.clamp(-1, 1, (event.clientX - bounds.left) / bounds.width * 2 - 1) * 6;
-        const y = gsap.utils.clamp(-1, 1, (event.clientY - bounds.top) / bounds.height * 2 - 1) * 5;
-        movers.forEach(mover => { mover.x(x); mover.y(y); });
-      };
-      const reset = () => {
-        bounds = undefined;
-        if (!active) return;
-        active = false;
-        movers.forEach(mover => { mover.x(0); mover.y(0); });
-      };
-      area.addEventListener('pointerenter', move);
-      area.addEventListener('pointermove', move);
-      area.addEventListener('pointerleave', reset);
-      area.addEventListener('pointercancel', reset);
-      resets.push(reset);
-      cleanups.push(() => {
-        area.removeEventListener('pointerenter', move);
-        area.removeEventListener('pointermove', move);
-        area.removeEventListener('pointerleave', reset);
-        area.removeEventListener('pointercancel', reset);
-      });
-    });
-    const resetAll = () => resets.forEach(reset => reset());
-    window.addEventListener('scroll', resetAll, { passive: true });
-    window.addEventListener('resize', resetAll, { passive: true });
-    window.addEventListener('blur', resetAll);
-    return () => {
-      cleanups.forEach(cleanup => cleanup());
-      window.removeEventListener('scroll', resetAll);
-      window.removeEventListener('resize', resetAll);
-      window.removeEventListener('blur', resetAll);
-      gsap.killTweensOf(images);
-      gsap.set(images, { clearProps: 'transform' });
-    };
-  });
+  // Product hover is a CSS zoom towards the viewer (design.css), not a pointer drift.
 }
