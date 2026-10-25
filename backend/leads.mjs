@@ -10,7 +10,7 @@ export function createLeadService({ send, now = Date.now, dedupMs = 300_000, max
   const deliveries = new Map();
   const limits = new Map();
   let global = { count: 0, until: 0 };
-  let telegramBlockedUntil = 0;
+  let upstreamBlockedUntil = 0;
 
   function admit(ip) {
     const time = now();
@@ -31,7 +31,7 @@ export function createLeadService({ send, now = Date.now, dedupMs = 300_000, max
     const { source: _source, ...identity } = lead;
     const key = digest(JSON.stringify(identity));
     if (deliveries.has(key)) return deliveries.get(key).promise;
-    if (telegramBlockedUntil > time) return failure(503, 'DELIVERY_UNAVAILABLE');
+    if (upstreamBlockedUntil > time) return failure(503, 'DELIVERY_UNAVAILABLE');
     if (deliveries.size >= maxEntries) return failure(503, 'DELIVERY_UNAVAILABLE');
     // Only a validated, new delivery consumes the process-wide send budget.
     if (global.until <= time) global = { count: 0, until: time + windowMs };
@@ -58,7 +58,7 @@ export function createLeadService({ send, now = Date.now, dedupMs = 300_000, max
       if (outcome === 'rejected') {
         const retryMs = Math.max(5, result.retryAfter || 5) * 1000;
         entry.until = now() + retryMs;
-        telegramBlockedUntil = entry.until;
+        upstreamBlockedUntil = entry.until;
         return failure(502, 'DELIVERY_FAILED');
       }
       return failure(502, 'DELIVERY_UNCERTAIN');

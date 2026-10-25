@@ -29,7 +29,7 @@ function setup(t, fetchImpl = async () => success(), { shortTimeout = false } = 
   const inline = window.document.querySelector('#project-form');
   const modal = window.document.querySelector('#dialog-form');
   const change = (field, type = 'input') => field.dispatchEvent(new window.Event(type, { bubbles: true }));
-  const fill = (form, comment = 'Тест без отправки в Telegram') => {
+  const fill = (form, comment = 'Тест без отправки в CRM') => {
     form.elements.name.value = 'Тест'; change(form.elements.name);
     form.elements.phone.value = '80000000001'; change(form.elements.phone);
     form.elements.comment.value = comment; change(form.elements.comment);
@@ -57,7 +57,7 @@ test('inline and hero share a draft, normalized phone and a single pending reque
   assert.equal(x.calls.length, 1);
   assert.equal(x.calls[0].url, '/api/leads');
   assert.deepEqual(x.calls[0].payload, { schemaVersion: 1, name: 'Тест', phone: '+70000000001', product: null,
-    interests: ['undecided'], model: null, comment: 'Тест без отправки в Telegram', consent: true, source: 'hero-modal' });
+    interests: ['undecided'], model: null, comment: 'Тест без отправки в CRM', consent: true, source: 'hero-modal' });
   for (const form of [x.modal, x.inline]) {
     assert.equal(form.querySelector('[type="submit"]').disabled, true);
     assert.equal(form.elements.name.disabled, true);

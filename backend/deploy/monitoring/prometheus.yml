@@ -3,7 +3,7 @@ global:
   scrape_timeout: 5s
   evaluation_interval: 1m
 
-# Host metrics only. No API requests, logs, Telegram data or remote_write.
+# Host metrics only. No API requests, logs, CRM data or remote_write.
 scrape_configs:
   - job_name: node
     sample_limit: 3000

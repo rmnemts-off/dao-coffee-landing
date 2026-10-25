@@ -1,7 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { validateLead, directions } from '../validation.mjs';
-import { createTelegramSender, formatLead } from '../telegram.mjs';
 import { createLeadService } from '../leads.mjs';
 
 const valid = overrides => ({ schemaVersion: 1, name: 'Тестовая заявка', phone: '+70000000001', product: null,
@@ -36,62 +35,6 @@ test('rejects invalid shape, consent, phone, direction, source and lengths', () 
   ];
   for (const [field, data] of cases) assert.ok(validateLead(valid(data)).fieldErrors?.[field], `${field}: ${JSON.stringify(data)}`);
   assert.ok(validateLead(valid({ name: 'я'.repeat(100), model: 'x'.repeat(120), comment: '😀'.repeat(1000) })).lead);
-});
-
-test('Telegram HTML is escaped; no user markup becomes a link/tag', () => {
-  const text = formatLead(valid({ name: '<b>Тест</b>', comment: '<a href="tg://user?id=1">&</a>', model: '<model>' }), 'test-id');
-  assert.match(text, /&lt;b&gt;Тест&lt;\/b&gt;/);
-  assert.match(text, /&lt;a href="tg:\/\/user\?id=1"&gt;&amp;&lt;\/a&gt;/);
-  assert.equal(text.includes('<a '), false);
-  assert.match(text, /Помогите определиться/);
-  assert.match(text, /Нижняя форма/);
-});
-
-test('Telegram confirms success only on a valid sendMessage result', async () => {
-  let calls = 0;
-  const send = createTelegramSender({ token: '1:mock-token', chatId: '-123', fetchImpl: async (url, options) => {
-    calls++;
-    assert.equal(url, 'https://api.telegram.org/bot1:mock-token/sendMessage');
-    assert.equal(options.redirect, 'error');
-    const message = JSON.parse(options.body);
-    assert.equal(message.chat_id, '-123');
-    assert.equal(message.parse_mode, 'HTML');
-    assert.equal(message.link_preview_options.is_disabled, true);
-    return Response.json({ ok: true, result: { message_id: 42 } });
-  } });
-  assert.equal((await send(valid(), 'test')).kind, 'delivered');
-  assert.equal(calls, 1);
-});
-
-test('no credentials means no outbound network; tokens and upstream errors are never returned', async () => {
-  const send = createTelegramSender({ fetchImpl: () => { assert.fail('must not call Telegram'); } });
-  assert.deepEqual(await send(valid(), 'test'), { kind: 'unconfigured' });
-  for (const [response, kind] of [
-    [Response.json({ ok: false, error_code: 403, description: 'private upstream error' }, { status: 403 }), 'rejected'],
-    [Response.json({ ok: true }), 'uncertain'],
-    [Response.json({ ok: true, result: { message_id: 0 } }), 'uncertain'],
-    [Response.json({ ok: false, error_code: 500 }, { status: 500 }), 'uncertain'],
-    [new Response('not-json', { status: 502 }), 'uncertain'],
-  ]) {
-    const result = await createTelegramSender({ token: '1:mock-token', chatId: '-123', fetchImpl: async () => response })(valid(), 'test');
-    assert.equal(result.kind, kind);
-    assert.equal(JSON.stringify(result).includes('private'), false);
-  }
-});
-
-test('timeout covers both HTTP and response body, aborts, and never retries', async () => {
-  for (const stalledBody of [false, true]) {
-    let calls = 0;
-    let signal;
-    const send = createTelegramSender({ token: '1:mock-token', chatId: '-123', timeoutMs: 15, fetchImpl: async (_url, options) => {
-      calls++; signal = options.signal;
-      if (stalledBody) return { ok: true, json: () => new Promise(() => {}) };
-      return new Promise(() => {});
-    } });
-    assert.deepEqual(await send(valid(), 'test'), { kind: 'uncertain' });
-    assert.equal(signal.aborted, true);
-    assert.equal(calls, 1);
-  }
 });
 
 test('concurrent / sequential duplicates and shared general sources send once', async () => {

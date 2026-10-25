@@ -7,11 +7,12 @@
   "scripts": {
     "dev": "node scripts/serve.mjs",
     "start": "node scripts/serve.mjs",
-    "check": "node --check site/scripts/main.js && node --check site/scripts/forms.js && node --check scripts/serve.mjs && node --check backend/server.mjs && node --check backend/leads.mjs && node --check backend/telegram.mjs && node --check backend/validation.mjs && node --check backend/preview.mjs",
+    "check": "node --check site/scripts/main.js && node --check site/scripts/forms.js && node --check scripts/serve.mjs && node --check backend/server.mjs && node --check backend/leads.mjs && node --check backend/bitrix.mjs && node --check backend/validation.mjs && node --check backend/preview.mjs && node --check backend/inspect-bitrix.mjs",
     "dev:backend": "node backend/preview.mjs",
-    "dev:telegram": "node --env-file=.env backend/preview.mjs --telegram",
     "start:backend": "node --env-file-if-exists=.env backend/server.mjs",
-    "test": "node --test backend/test/*.test.mjs"
+    "test": "node --test backend/test/*.test.mjs",
+    "dev:bitrix": "node --env-file=.env backend/preview.mjs --bitrix",
+    "inspect:bitrix": "node --env-file=.env backend/inspect-bitrix.mjs"
   },
   "engines": {
     "node": ">=22.9"

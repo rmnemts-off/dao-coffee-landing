@@ -1,4 +1,4 @@
-// Context-specific, in-memory drafts. Telegram credentials stay on the server.
+// Context-specific, in-memory drafts. CRM credentials stay on the server.
 (() => {
   const inlineForm = document.querySelector('#project-form');
   const dialog = document.querySelector('#project-dialog');

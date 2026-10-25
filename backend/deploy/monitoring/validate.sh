@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-# Read-only checks on the deployed host; never sends a lead or contacts Telegram.
+# Read-only checks on the deployed host; never sends a lead or contacts Bitrix24.
 [[ $(uname -s) == Linux && -d /run/systemd/system ]] || { printf 'Run on the Linux VPS.\n' >&2; exit 1; }
 for unit in grafana-server prometheus prometheus-node-exporter; do
   systemctl is-active --quiet "$unit"

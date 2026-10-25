@@ -110,10 +110,10 @@ test('invalid traffic from separate clients does not exhaust the global delivery
   assert.equal(calls, 1);
 });
 
-test('readiness checks only local configuration and draining, without a Telegram request', async t => {
-  const configured = { NODE_ENV: 'production', APP_ORIGIN: 'https://dao.example', TELEGRAM_BOT_TOKEN: '1:mock-token', TELEGRAM_CHAT_ID: '-123' };
-  for (const env of [{}, { ...configured, TELEGRAM_BOT_TOKEN: 'invalid' }, { ...configured, APP_ORIGIN: '' }, { ...configured, APP_ORIGIN: 'http://dao.example' }, configured]) {
-    // No injected sender: only configuration is checked, never sendMessage.
+test('readiness checks only local configuration and draining, without a Bitrix request', async t => {
+  const configured = { NODE_ENV: 'production', APP_ORIGIN: 'https://dao.example', BITRIX_WEBHOOK_URL: 'https://crm.example/rest/1/mock-secret/', BITRIX_ENTITY_TYPE_ID: '1', BITRIX_ASSIGNED_BY_ID: '1', BITRIX_STAGE_ID: 'NEW' };
+  for (const env of [{}, { ...configured, BITRIX_WEBHOOK_URL: 'invalid' }, { ...configured, APP_ORIGIN: '' }, { ...configured, APP_ORIGIN: 'http://dao.example' }, configured]) {
+    // No injected sender: only configuration is checked, never CRM creation.
     const { server, origin } = await start(t, { env, send: undefined });
     const ready = await fetch(`${origin}/readyz`);
     assert.equal(ready.status, env === configured ? 200 : 503);
@@ -123,6 +123,16 @@ test('readiness checks only local configuration and draining, without a Telegram
     assert.equal((await fetch(`${origin}/readyz`)).status, 503);
     assert.equal((await fetch(`${origin}/healthz`)).status, 200);
   }
+});
+
+test('legacy Telegram-only configuration cannot accept or send a production lead', async t => {
+  const { post, origin } = await start(t, { send: undefined,
+    env: { NODE_ENV: 'production', APP_ORIGIN: 'https://dao.example', TELEGRAM_BOT_TOKEN: '1:legacy', TELEGRAM_CHAT_ID: '123' },
+  });
+  assert.equal((await fetch(`${origin}/readyz`)).status, 503);
+  const result = await post();
+  assert.equal(result.status, 503);
+  assert.deepEqual(await result.json(), { ok: false, code: 'DELIVERY_UNAVAILABLE' });
 });
 
 test('draining rejects new deliveries while an admitted delivery finishes', async t => {
@@ -147,7 +157,7 @@ test('draining rejects new deliveries while an admitted delivery finishes', asyn
   assert.equal(await stopped, true);
 });
 
-test('shutdown waits for Telegram after the client disconnects and HTTP server closes', async t => {
+test('shutdown waits for Bitrix after the client disconnects and HTTP server closes', async t => {
   let complete;
   let started;
   const sending = new Promise(resolve => { started = resolve; });

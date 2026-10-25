@@ -2,7 +2,15 @@ import http from 'node:http';
 import { isIP } from 'node:net';
 import { pathToFileURL } from 'node:url';
 import { createLeadService, failure } from './leads.mjs';
-import { createTelegramSender } from './telegram.mjs';
+import { bitrixConfig, createBitrixSender } from './bitrix.mjs';
+
+function parseOrigin(value) {
+  try {
+    const url = new URL(value);
+    return ['http:', 'https:'].includes(url.protocol) && !url.username && !url.password &&
+      url.pathname === '/' && !url.search && !url.hash ? url.origin : null;
+  } catch { return null; }
+}
 
 function reply(response, result) {
   if (response.destroyed || response.writableEnded) return;
@@ -43,10 +51,11 @@ function readBody(request, maxBytes, timeoutMs) {
 
 export function createServer({ env = process.env, send,
   serviceOptions = {}, maxBytes = 8192, bodyTimeoutMs = 5000, serveStatic } = {}) {
-  const configuredSender = /^\d+:[\w-]+$/.test(env.TELEGRAM_BOT_TOKEN || '') && /^(?:-?\d+|@[A-Za-z][A-Za-z0-9_]{4,})$/.test(env.TELEGRAM_CHAT_ID || '');
-  const service = createLeadService({ ...serviceOptions, send: send ?? createTelegramSender({ token: env.TELEGRAM_BOT_TOKEN, chatId: env.TELEGRAM_CHAT_ID }) });
-  const appOrigin = env.APP_ORIGIN ? new URL(env.APP_ORIGIN).origin : null;
-  const configured = (typeof send === 'function' || configuredSender) && (env.NODE_ENV !== 'production' || appOrigin?.startsWith('https://'));
+  const configuredSender = Boolean(bitrixConfig(env));
+  const service = createLeadService({ ...serviceOptions, send: send ?? createBitrixSender({ env }) });
+  const appOrigin = parseOrigin(env.APP_ORIGIN);
+  const configured = (typeof send === 'function' || configuredSender) && (!env.APP_ORIGIN || Boolean(appOrigin)) &&
+    (env.NODE_ENV !== 'production' || appOrigin?.startsWith('https://'));
   let draining = false;
   let activeHandlers = 0;
   let listenerClosed = false;
@@ -56,7 +65,7 @@ export function createServer({ env = process.env, send,
     if (listenerClosed && activeHandlers === 0) finishShutdown?.(true);
   };
   const server = http.createServer(async (request, response) => {
-    // A client socket can close while Telegram is still sending. Track the actual
+    // A client socket can close while the CRM call is still running. Track the actual
     // handler lifetime, not response/socket events, before allowing process exit.
     activeHandlers++;
     try {
@@ -69,7 +78,7 @@ export function createServer({ env = process.env, send,
         return reply(response, failure(404, 'NOT_FOUND'));
       }
       if (request.method !== 'POST') { response.setHeader('Allow', 'POST'); return reply(response, failure(405, 'METHOD_NOT_ALLOWED')); }
-      if (draining) {
+      if (draining || !configured) {
         response.setHeader('Connection', 'close');
         return reply(response, failure(503, 'DELIVERY_UNAVAILABLE'));
       }
@@ -96,7 +105,7 @@ export function createServer({ env = process.env, send,
       if (draining) response.setHeader('Connection', 'close');
       return reply(response, result);
     } catch {
-      // Deliberately omit exception details: fetch errors may include a bot token.
+      // Deliberately omit exception details: fetch errors may include a webhook secret.
       reply(response, failure(503, 'DELIVERY_UNAVAILABLE'));
     } finally {
       activeHandlers--;
@@ -133,7 +142,7 @@ export function createServer({ env = process.env, send,
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  if (process.env.NODE_ENV === 'production' && (!process.env.APP_ORIGIN || !process.env.TELEGRAM_BOT_TOKEN || !process.env.TELEGRAM_CHAT_ID)) {
+  if (process.env.NODE_ENV === 'production' && (!bitrixConfig(process.env) || !parseOrigin(process.env.APP_ORIGIN)?.startsWith('https://'))) {
     console.error('Missing production configuration. See backend/README.md.');
     process.exitCode = 1;
   } else {
