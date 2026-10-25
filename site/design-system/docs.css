@@ -201,10 +201,11 @@ code{font:400 12.5px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(-
 .ds-error-demo .form-status{text-align:left}
 
 /* ---------- Landing blocks ---------- */
-.spread{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px clamp(32px,5vw,72px);align-items:center;padding:clamp(24px,4vw,56px);border-radius:var(--radius-card);background:var(--sage)}
-.spread .section-heading{grid-column:1/-1}
-.spread-copy{display:grid;gap:22px;justify-items:start;min-width:0}
-.spread .models{justify-self:stretch}
+/* The brand spread demo is the landing section itself, framed as a card. */
+.spread{padding-inline:clamp(20px,3vw,48px);border-radius:var(--radius-card);--column-gap:clamp(24px,3vw,56px);--product-width:clamp(14rem,4rem + 16vw,26rem)}
+.spread .product-visual img{translate:var(--fx,0) var(--fy,0);transition:translate .55s var(--ease)}
+.spread .editorial-grid{grid-template-columns:minmax(0,.75fr) minmax(0,1.25fr)}
+@media(max-width:960px){.spread .editorial-grid{grid-template-columns:minmax(0,1fr)}}
 .contact-demo{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 24px;max-width:560px}
 .blocks-pair{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
 .ds-plate{display:grid;gap:18px;justify-items:start;padding:clamp(28px,4vw,48px)}
@@ -323,15 +324,17 @@ code{font:400 12.5px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(-
 .cta:active,.product-cta:active,.cta-light:active,.form-submit:active{scale:.97;transition:scale var(--duration-quick) var(--ease)}
 
 /* Type specimens */
-.display{font:700 var(--fs-display)/1.02 var(--heading);letter-spacing:-.045em;text-wrap:balance}
-.h1{font:700 var(--fs-h1)/1.05 var(--heading);letter-spacing:-.035em;text-wrap:balance}
-.h2{font:700 var(--fs-h2)/1.06 var(--heading);letter-spacing:-.035em;text-wrap:balance}
-.h3{font:700 var(--fs-h3)/1.08 var(--heading);letter-spacing:-.03em;text-wrap:balance}
-.h4{font:700 var(--fs-h4)/1.2 var(--heading);letter-spacing:-.02em}
-.lead{font:500 var(--fs-lead)/1.45 var(--heading);letter-spacing:-.005em;text-wrap:pretty}
+.display{font:700 var(--fs-hero)/1 var(--heading);letter-spacing:-.045em;text-wrap:balance}
+.h1{font:700 var(--fs-brand)/1 var(--heading);letter-spacing:-.035em;text-wrap:balance}
+.h2{font:700 var(--fs-h2)/1.04 var(--heading);letter-spacing:-.035em;text-wrap:balance}
+.person{font:700 var(--fs-person)/1.02 var(--heading);letter-spacing:-.035em}
+.h3{font:700 var(--fs-h3)/1.08 var(--heading);letter-spacing:-.035em;text-wrap:balance}
+.h4{font:700 var(--fs-card)/1.2 var(--heading);letter-spacing:-.01em}
+.fact{font:700 var(--fs-fact)/1.25 var(--heading);letter-spacing:-.01em}
+.lead{font:500 var(--fs-lead)/1.38 var(--heading);letter-spacing:-.008em;text-wrap:pretty}
 .text{font:300 var(--fs-body)/1.55 var(--body);text-wrap:pretty}
 .small{font:300 var(--fs-small)/1.5 var(--body)}
-.caption{font:300 var(--fs-caption)/1.4 var(--body);color:var(--text-muted)}
+.caption{font:300 var(--fs-small)/1.4 var(--body);color:var(--text-muted)}
 .label{font:400 var(--fs-label)/1.4 var(--body)}
 .index-title{display:flex;align-items:baseline;gap:.28em;font:700 var(--fs-h2)/1 var(--heading);letter-spacing:-.03em}
 .index-title .index{color:var(--green);font-variant-numeric:oldstyle-nums}
@@ -343,10 +346,14 @@ code{font:400 12.5px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(-
 .bubble-a{justify-self:end;background:color-mix(in srgb,var(--sage) 70%,var(--white));border-bottom-right-radius:3px;text-align:right}
 
 /* Product stage for the brand spread demo; on the landing GSAP moves .product-visual img */
-.product-stage{display:grid;place-items:center;min-height:360px}
-.product-stage img{width:min(100%,var(--product-width,340px));height:auto;filter:var(--shadow-product);pointer-events:none;user-select:none;-webkit-user-drag:none;translate:var(--fx,0) var(--fy,0);transition:translate .55s var(--ease)}
-.spread .models{grid-template-columns:repeat(3,minmax(0,1fr))}
-.spread .model-caption h3{font-size:clamp(11px,1.05vw,15px);overflow-wrap:anywhere}
+/* Trail rule: a dashed route for documents; the landing keeps it in links and on map plates. */
+.trail-rule{display:block;overflow:visible;color:var(--beige)}
+.trail-rule path{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-dasharray:6 7;vector-effect:non-scaling-stroke}
+.js-motion [data-trail]{transition:clip-path 1.6s var(--ease)}
+.js-motion [data-trail]:not(.is-drawn){clip-path:inset(-20px 100% -20px 0)}
+@keyframes trail-march{to{stroke-dashoffset:-26}}
+@media(hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){.trail-rule:hover path{animation:trail-march 1.2s linear infinite}}
+@media(prefers-reduced-motion:reduce){.js-motion [data-trail]:not(.is-drawn){clip-path:none}}
 
 /* Icons: linear, rounded ends, green circle badge */
 .icon{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;overflow:visible}

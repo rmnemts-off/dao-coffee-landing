@@ -67,7 +67,7 @@
         <ol class="principles">
           <li class="principle"><span class="num">1</span><h3>Светлый холст</h3><p>Фон страницы светлый и плавно перетекает между серым, шалфейным и песочным. Тёмных секций и резких переходов нет, цвет текста не переключается.</p></li>
           <li class="principle"><span class="num">2</span><h3>Зелёный отвечает за действие</h3><p>Фирменный зелёный достаётся кнопкам, фокусу и номерам глав. Бежевый работает линиями и светом и никогда не становится цветом текста.</p></li>
-          <li class="principle"><span class="num">3</span><h3>Тропа вместо декора</h3><p>Пунктир из паттерна связывает элементы: подчёркивает ссылки, отделяет блоки, показывает маршрут. Других украшений не добавляем.</p></li>
+          <li class="principle"><span class="num">3</span><h3>Тропа вместо декора</h3><p>Пунктир из паттерна связывает элементы: подчёркивает ссылки, ведёт по карте на плашках. Разделы отделяет плавная смена фона, а не линии. Других украшений не добавляем.</p></li>
           <li class="principle"><span class="num">4</span><h3>Товару нужна тишина</h3><p>Оборудование стоит без рамок и подложек, с мягкой тенью по силуэту. Карточки достаются только компактным линейкам моделей.</p></li>
           <li class="principle"><span class="num">5</span><h3>Мелочи с характером</h3><p>Свет под курсором, бегущий пунктир, флажок на вершине. Одно тихое движение на элемент, только для мыши и только без режима «меньше движения».</p></li>
         </ol>
@@ -211,17 +211,19 @@
 
       <div class="ds-block">
         <h3 class="ds-sub">Шкала</h3>
+        <p class="ds-sub-note">Размеры плавные: растут от телефона шириной 375 px до экрана 1920 px и дальше не увеличиваются. В формулах rem вместе с vw, поэтому масштабирование браузера работает. Иерархия строится сразу размером, насыщенностью и цветом: название, лид, подзаголовки пунктов, текст.</p>
         <div class="type-scale">
-          <div class="type-row"><p class="display">Автоматизация кофейного бизнеса</p><div class="type-meta"><code>--fs-display</code><span>50-98 px, Ysabeau 700, 1.02</span><span>Заголовок первого экрана</span></div></div>
-          <div class="type-row"><p class="h1">DrinkX</p><div class="type-meta"><code>--fs-h1</code><span>40-80 px, Ysabeau 700, 1.05</span><span>Название бренда в разделе</span></div></div>
-          <div class="type-row"><p class="h2">Подбор и комплектация</p><div class="type-meta"><code>--fs-h2</code><span>32-64 px, Ysabeau 700</span><span>Крупные блоки, главы</span></div></div>
-          <div class="type-row"><p class="h3">Обсудить ваш проект</p><div class="type-meta"><code>--fs-h3</code><span>28-44 px, Ysabeau 700</span><span>Форма, блок основателя</span></div></div>
-          <div class="type-row"><p class="h4">AEROMILK</p><div class="type-meta"><code>--fs-h4</code><span>18 px, Ysabeau 700</span><span>Карточки моделей</span></div></div>
-          <div class="type-row"><p class="lead">Кофейная точка, где гость выбирает напиток на экране, а станция готовит его без участия бариста.</p><div class="type-meta"><code>--fs-lead</code><span>18-20 px, Ysabeau 500, 1.45</span><span>Первый абзац раздела</span></div></div>
-          <div class="type-row"><p class="text">Подберём машину и кофемолку под меню и нагрузку кофейни. Учтём размеры стойки и то, как работает ваша команда.</p><div class="type-meta"><code>--fs-body</code><span>16 px, Fira 300, 1.55</span><span>Основной текст</span></div></div>
-          <div class="type-row"><p class="small">Мультибойлерная система для эспрессо и молока. В DMANTIS II SAT-B встроены весы для контроля порции.</p><div class="type-meta"><code>--fs-small</code><span>14 px, Fira 300, 1.5</span><span>Описания пунктов</span></div></div>
-          <div class="type-row"><p class="label">Заявка на DrinkX</p><div class="type-meta"><code>--fs-label</code><span>14 px, Fira 400</span><span>Кнопки, меню, подписи полей</span></div></div>
-          <div class="type-row"><p class="caption">Ростов-на-Дону, филиал</p><div class="type-meta"><code>--fs-caption</code><span>12 px, Fira 300</span><span>Метки, мелкие подписи</span></div></div>
+          <div class="type-row"><p class="display">Автоматизация кофейного бизнеса</p><div class="type-meta"><code>--fs-hero</code><span>52-128 px, Ysabeau 700, 1.0</span><span>Заголовок первого экрана</span></div></div>
+          <div class="type-row"><p class="h1">DrinkX</p><div class="type-meta"><code>--fs-brand</code><span>44-112 px, Ysabeau 700, 1.0</span><span>Название бренда; у DrinkX на ступень крупнее</span></div></div>
+          <div class="type-row"><p class="h2">Подбор и комплектация</p><div class="type-meta"><code>--fs-h2</code><span>36-84 px, Ysabeau 700</span><span>Крупные блоки</span></div></div>
+          <div class="type-row"><p class="person">Дмитрий Онищук</p><div class="type-meta"><code>--fs-person</code><span>32-60 px, Ysabeau 700</span><span>Имя основателя</span></div></div>
+          <div class="type-row"><p class="h3">Обсудить ваш проект</p><div class="type-meta"><code>--fs-h3</code><span>30-48 px, Ysabeau 700</span><span>Заголовок формы</span></div></div>
+          <div class="type-row"><p class="lead">Кофейная точка, где гость выбирает напиток на экране, а станция готовит его без участия бариста.</p><div class="type-meta"><code>--fs-lead</code><span>19-28 px, Ysabeau 500, 1.38</span><span>Главный текст раздела, читается сразу после названия</span></div></div>
+          <div class="type-row"><p class="fact">Станции S100 / S400</p><div class="type-meta"><code>--fs-fact</code><span>17-22 px, Ysabeau 700</span><span>Подзаголовок пункта, контакты</span></div></div>
+          <div class="type-row"><p class="h4">AEROMILK</p><div class="type-meta"><code>--fs-card</code><span>15-21 px, Ysabeau 700</span><span>Карточки моделей</span></div></div>
+          <div class="type-row"><p class="text">Подберём машину и кофемолку под меню и нагрузку кофейни. Учтём размеры стойки и то, как работает ваша команда.</p><div class="type-meta"><code>--fs-body</code><span>16-19.5 px, Fira 300, 1.55</span><span>Основной текст, строка до 58 знаков</span></div></div>
+          <div class="type-row"><p class="label">Заявка на DrinkX</p><div class="type-meta"><code>--fs-label</code><span>15-18 px, Fira 400</span><span>Кнопки, меню, подписи полей</span></div></div>
+          <div class="type-row"><p class="caption">Ростов-на-Дону, филиал</p><div class="type-meta"><code>--fs-small</code><span>13.5-16 px, Fira 300</span><span>Подписи и метки</span></div></div>
         </div>
       </div>
 
@@ -264,7 +266,7 @@
           </svg>
           <div class="trail-ends"><span>Первый экран</span><span>Форма заявки</span></div>
         </div>
-        <p class="ds-note">Пунктир рисуется один раз, когда попадает в экран, и начинает бежать при наведении. <strong>На лендинге:</strong> маршрут между разделами от первого экрана до формы; направление чередуется, как серпантин. Классы <code>.section-trail .trail-rule</code>, атрибут <code>data-trail</code>.</p>
+        <p class="ds-note">Пунктир рисуется один раз, когда попадает в экран, и начинает бежать при наведении. Компонент для документов и презентаций. <strong>На лендинге</strong> тропа живёт в подчёркивании ссылок и на картах плашек; разделителей между разделами нет, их отделяет смена фона.</p>
       </div>
 
       <div class="ds-rules">
@@ -280,10 +282,10 @@
         <p class="ds-intro">Одна страница с обычной вертикальной прокруткой. Контент держится в контейнере, поля растут вместе с экраном. Формы мягкие: брендбук описывает образ компании как треугольник со скруглёнными углами.</p>
       </div>
       <div class="spec-cards">
-        <div class="spec-card"><strong>1480 px</strong><span>Контейнер <code>--container</code></span></div>
-        <div class="spec-card"><strong>24-96 px</strong><span>Боковые поля <code>--gutter</code></span></div>
-        <div class="spec-card"><strong>76 / 72 px</strong><span>Шапка на компьютере и телефоне</span></div>
-        <div class="spec-card"><strong>1200, 900, 640</strong><span>Точки перелома, плюс 360 для узких телефонов</span></div>
+        <div class="spec-card"><strong>до 2240 px</strong><span>Контейнер <code>--container</code>: страница занимает ширину экрана</span></div>
+        <div class="spec-card"><strong>20-120 px</strong><span>Боковые поля <code>--gutter</code></span></div>
+        <div class="spec-card"><strong>44-88 px</strong><span>Отступ раздела <code>--section-pad</code></span></div>
+        <div class="spec-card"><strong>1280, 960, 640</strong><span>Меню в кнопку, одна колонка, телефон; плюс 360</span></div>
       </div>
 
       <div class="ds-block">
@@ -299,7 +301,7 @@
           <div class="space-row"><code>--space-8</code><span>72 px</span><i style="--s:72px"></i></div>
           <div class="space-row"><code>--space-9</code><span>96 px</span><i style="--s:96px"></i></div>
         </div>
-        <p class="ds-note">Между элементами внутри блока 8-24 px, между блоками раздела 24-48 px, отступ раздела 72 px на компьютере и 44 px на телефоне.</p>
+        <p class="ds-note">Близкое ставим близко: название и лид 18-32 px, лид и пункты 24-44 px, пункты между собой 18-28 px, раздел от раздела <code>--section-pad</code>. Между колонками картинки и текста <code>--column-gap</code>, 32-144 px.</p>
       </div>
 
       <div class="ds-block">
@@ -400,20 +402,24 @@
 
       <div class="ds-block">
         <h3 class="ds-sub">Раздел бренда</h3>
-        <article class="spread" data-reveal>
-          <header class="section-heading"><h2>DrinkX</h2></header>
-          <figure class="product-stage" data-follow style="--product-width:300px"><img src="/assets/products/drinkx-user-station.webp" width="991" height="1331" alt="Кофейная станция DrinkX: стойка с подсветкой, кран и экран заказа" draggable="false"></figure>
-          <div class="spread-copy">
-            <p class="section-summary">Кофейная точка, где гость выбирает напиток на экране, а станция готовит его без участия бариста.</p>
-            <ul class="product-facts">
-              <li><strong>Станции S100 / S400</strong>Для офиса, магазина, АЗС или отдельного кофе-пойнта.</li>
-              <li><strong>Под вашу площадку и меню</strong>Модули скрыты под стойкой. Можно добавить несколько видов молока, сиропы, холодильник и отдельный корпус.</li>
-            </ul>
-            <button class="product-cta" type="button" data-spotlight>Заявка на DrinkX</button>
-            <div class="models">
+        <article class="spread product-section section-drinkx" data-reveal>
+          <div class="editorial-grid">
+            <header class="section-heading"><h2>DrinkX</h2></header>
+            <figure class="product-visual" data-follow><img src="/assets/products/drinkx-user-station.webp" width="991" height="1331" alt="Кофейная станция DrinkX: стойка с подсветкой, кран и экран заказа" draggable="false"></figure>
+            <div class="product-copy">
+              <p class="section-summary">Кофейная точка, где гость выбирает напиток на экране, а станция готовит его без участия бариста.</p>
+              <div class="section-details">
+                <ul class="product-facts">
+                  <li><strong>Станции S100 / S400</strong>Для офиса, магазина, АЗС или отдельного кофе-пойнта.</li>
+                  <li><strong>Под вашу площадку и меню</strong>Модули скрыты под стойкой. Можно добавить несколько видов молока, сиропы, холодильник и отдельный корпус.</li>
+                </ul>
+                <button class="product-cta" type="button" data-spotlight>Заявка на DrinkX</button>
+              </div>
+              <div class="lineup"><div class="models">
               <article class="model" data-spotlight><div class="model-picture"><img src="/assets/products/drinkx-aeromilk-catalog.webp" width="1400" height="1400" alt="AEROMILK"></div><div class="model-caption"><h3>AEROMILK</h3><p>Молоко и пена</p></div></article>
               <article class="model" data-spotlight><div class="model-picture"><img src="/assets/products/drinkx-ultrabrewer-catalog.webp" width="1400" height="1400" alt="ULTRABREWER"></div><div class="model-caption"><h3>ULTRABREWER</h3><p>Кофе и чай</p></div></article>
               <article class="model" data-spotlight><div class="model-picture"><img src="/assets/products/drinkx-flow-x-catalog.webp" width="1400" height="1400" alt="FLOW-X"></div><div class="model-caption"><h3>FLOW-X</h3><p>Нагрев воды</p></div></article>
+            </div></div>
             </div>
           </div>
         </article>
@@ -499,7 +505,7 @@
         <li class="motion-item"><span class="num">1</span><h3>Карта под фонариком</h3><p><strong>Где:</strong> паттерн первого экрана и плашек.</p><p>Вокруг курсора линии проявляются ярче в радиусе 260 px. Атрибут <code>data-topo-lit</code>.</p></li>
         <li class="motion-item"><span class="num">2</span><h3>Свет под курсором</h3><p><strong>Где:</strong> кнопки и карточки моделей.</p><p>Внутри элемента теплится мягкое пятно света: кремовое на зелёном, бежевое на светлом. Атрибут <code>data-spotlight</code>.</p></li>
         <li class="motion-item"><span class="num">3</span><h3>Бегущий пунктир</h3><p><strong>Где:</strong> ссылки меню, контакты, разделители.</p><p>Пунктир тропы проявляется и идёт вперёд, пока курсор на ссылке.</p></li>
-        <li class="motion-item"><span class="num">4</span><h3>Тропа рисуется</h3><p><strong>Где:</strong> разделители.</p><p>Один раз при появлении на экране линия прорисовывается слева направо за 1,6 с.</p></li>
+        <li class="motion-item"><span class="num">4</span><h3>Тропа рисуется</h3><p><strong>Где:</strong> разделители в документах; на лендинге не используется.</p><p>Один раз при появлении на экране линия прорисовывается слева направо за 1,6 с.</p></li>
         <li class="motion-item"><span class="num">5</span><h3>Подъём картинки</h3><p><strong>Где:</strong> карточки моделей.</p><p>Картинка поднимается на 5 px, тень под ней становится мягче. Карточка и подпись на месте.</p></li>
         <li class="motion-item"><span class="num">6</span><h3>Товар следит за курсором</h3><p><strong>Где:</strong> крупное оборудование раздела.</p><p>Смещение не больше 6 × 5 px, XLVI и Ceado двигаются независимо. Атрибут <code>data-follow</code>.</p></li>
         <li class="motion-item"><span class="num">7</span><h3>Нажатие</h3><p><strong>Где:</strong> все кнопки.</p><p>Масштаб 0,97 за 150 ms, затем мягкий возврат. Подтверждает, что нажатие принято.</p></li>
