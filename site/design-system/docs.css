@@ -202,9 +202,8 @@ code{font:400 12.5px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(-
 
 /* ---------- Landing blocks ---------- */
 /* The brand spread demo is the landing section itself, framed as a card. */
-.spread{padding-inline:clamp(20px,3vw,48px);border-radius:var(--radius-card);--column-gap:clamp(24px,3vw,56px);--product-width:clamp(14rem,4rem + 16vw,26rem)}
+.spread{padding-inline:clamp(20px,3vw,48px);border-radius:var(--radius-card);--column-gap:clamp(24px,3vw,56px)}
 .spread .product-visual img{translate:var(--fx,0) var(--fy,0);transition:translate .55s var(--ease)}
-.spread .editorial-grid{grid-template-columns:minmax(0,.75fr) minmax(0,1.25fr)}
 @media(max-width:960px){.spread .editorial-grid{grid-template-columns:minmax(0,1fr)}}
 .contact-demo{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,15.5rem),1fr));gap:0 24px;max-width:560px}
 .blocks-pair{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
