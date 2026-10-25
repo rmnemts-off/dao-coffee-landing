@@ -7,9 +7,15 @@
   "scripts": {
     "dev": "node scripts/serve.mjs",
     "start": "node scripts/serve.mjs",
-    "check": "node --check site/scripts/main.js && node --check site/scripts/forms.js && node --check scripts/serve.mjs"
+    "check": "node --check site/scripts/main.js && node --check site/scripts/forms.js && node --check scripts/serve.mjs && node --check backend/server.mjs && node --check backend/leads.mjs && node --check backend/telegram.mjs && node --check backend/validation.mjs && node --check backend/preview.mjs",
+    "dev:backend": "node backend/preview.mjs",
+    "start:backend": "node --env-file-if-exists=.env backend/server.mjs",
+    "test": "node --test backend/test/*.test.mjs"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=22.9"
+  },
+  "devDependencies": {
+    "jsdom": "26.1.0"
   }
 }

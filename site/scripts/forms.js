@@ -1,4 +1,4 @@
-// Context-specific, in-memory drafts. There is deliberately no submission transport.
+// Context-specific, in-memory drafts. Telegram credentials stay on the server.
 (() => {
   const inlineForm = document.querySelector('#project-form');
   const dialog = document.querySelector('#project-dialog');
@@ -55,6 +55,10 @@
     }
   };
   const drafts = new Map();
+  const deliveries = new Map();
+  const lockedFields = new WeakMap();
+  const productIds = Object.fromEntries(Object.entries(directions).map(([id, label]) => [label, id]));
+  const unknownDelivery = 'Не удалось подтвердить доставку. Заявка могла дойти. Не отправляйте её повторно сразу; свяжитесь с нами по указанным на сайте контактам.';
   inlineForm.dataset.context = 'general';
   modalForm.dataset.context = 'general';
   let opener;
@@ -78,6 +82,51 @@
   function clearFeedback(form) {
     form.querySelector('.form-status').textContent = '';
     form.querySelectorAll('[aria-invalid]').forEach(field => field.removeAttribute('aria-invalid'));
+    renderDelivery(form);
+  }
+  function renderDelivery(form) {
+    const state = deliveries.get(form.dataset.context);
+    const pending = state?.pending === true;
+    const locked = lockedFields.get(form);
+    if (locked) {
+      for (const [field, disabled] of locked) field.disabled = disabled;
+      lockedFields.delete(form);
+    }
+    if (pending) {
+      const fields = [...form.querySelectorAll('input, textarea, select')];
+      lockedFields.set(form, fields.map(field => [field, field.disabled]));
+      for (const field of fields) field.disabled = true;
+    }
+    const button = form.querySelector('[type="submit"]');
+    button.disabled = pending;
+    button.textContent = pending ? 'Отправляем…' : 'Отправить заявку';
+    form.setAttribute('aria-busy', String(pending));
+    form.dataset.state = pending ? 'sending' : state?.state || 'ready';
+    if (state?.message) form.querySelector('.form-status').textContent = state.message;
+  }
+  function payloadFor(form) {
+    const product = productIds[form.elements.product.value] || null;
+    return {
+      schemaVersion: 1, name: form.elements.name.value.trim(),
+      phone: `+${form.elements.phone.value.replace(/\D/g, '')}`,
+      product, interests: product ? [] : [...form.querySelectorAll('[name="interests"]:checked')]
+        .map(field => field.value === 'Помогите определиться' ? 'undecided' : productIds[field.value]),
+      model: form.dataset.model || null, comment: form.elements.comment.value.trim(),
+      consent: form.elements.consent.checked,
+      source: form === inlineForm ? 'inline' : product ? 'brand-modal' : 'hero-modal',
+    };
+  }
+  function showFieldErrors(form, errors) {
+    const allowed = { name: form.elements.name, phone: form.elements.phone, consent: form.elements.consent,
+      comment: form.elements.comment, interests: form.querySelector('.product-field') };
+    let first;
+    for (const key of Object.keys(errors || {})) {
+      const field = Object.hasOwn(allowed, key) ? allowed[key] : null;
+      if (!field) continue;
+      field.setAttribute('aria-invalid', 'true');
+      first ||= key === 'interests' ? field.querySelector('input') : field;
+    }
+    first?.focus();
   }
   function setModel(form, model = '') {
     form.dataset.model = model;
@@ -114,6 +163,7 @@
     modalForm.querySelector('.product-field').disabled = !!product;
     if (product) modalForm.elements.product.value = product;
     setModel(modalForm, model);
+    renderDelivery(modalForm);
   }
 
   document.querySelectorAll('[data-product]').forEach(trigger => {
@@ -246,11 +296,15 @@
   for (const form of forms) {
     attachPhoneMask(form.elements.phone);
     form.addEventListener('input', event => {
+      const state = deliveries.get(form.dataset.context);
+      if (!state?.pending) deliveries.delete(form.dataset.context);
       event.target.removeAttribute('aria-invalid');
       form.querySelector('.form-status').textContent = '';
       saveDraft(form);
+      renderDelivery(form);
     });
     form.addEventListener('change', event => {
+      if (!deliveries.get(form.dataset.context)?.pending) deliveries.delete(form.dataset.context);
       if (event.target.name === 'interests' && event.target.checked) {
         for (const field of form.querySelectorAll('[name="interests"]')) {
           if (field !== event.target && (event.target.value === 'Помогите определиться' || field.value === 'Помогите определиться')) field.checked = false;
@@ -260,8 +314,10 @@
       clearFeedback(form);
       saveDraft(form);
     });
-    form.addEventListener('submit', event => {
+    form.addEventListener('submit', async event => {
       event.preventDefault();
+      const context = form.dataset.context;
+      if (deliveries.get(context)?.pending) return;
       const nameValid = form.elements.name.value.trim().length >= 2;
       const phoneValid = /^7\d{10}$/.test(form.elements.phone.value.replace(/\D/g, ''));
       const interestGroup = form.querySelector('.product-field');
@@ -282,7 +338,45 @@
         invalid[0].focus();
         return;
       }
-      status.textContent = 'Заявка не отправлена: отправка ещё не подключена.';
+      saveDraft(form);
+      const payload = payloadFor(form);
+      const state = { pending: true, state: 'sending', message: 'Отправляем заявку…' };
+      deliveries.set(context, state);
+      for (const target of forms) if (target.dataset.context === context) renderDelivery(target);
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 12_000);
+      let fieldErrors;
+      try {
+        const response = await fetch('/api/leads', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin', signal: controller.signal, body: JSON.stringify(payload),
+        });
+        const result = await response.json();
+        if (response.status === 200 && result?.ok === true && typeof result.requestId === 'string' && result.requestId) {
+          state.state = 'success';
+          state.message = 'Заявка отправлена. Мы свяжемся с вами.';
+        } else {
+          state.state = 'error';
+          if (result?.ok !== false) state.message = unknownDelivery;
+          else if (response.status === 400 && result.code === 'VALIDATION_ERROR') {
+            state.message = 'Проверьте отмеченные поля. Заявка не отправлена.';
+            fieldErrors = result.fieldErrors;
+          } else if (response.status === 429) state.message = 'Слишком много попыток. Подождите минуту и попробуйте снова.';
+          else if (response.status === 413) state.message = 'Заявка слишком большая. Сократите текст и попробуйте снова.';
+          else if (result.code === 'DELIVERY_UNCERTAIN') state.message = unknownDelivery;
+          else if (['DELIVERY_FAILED', 'DELIVERY_UNAVAILABLE'].includes(result.code)) state.message = 'Отправить заявку сейчас не удалось. Попробуйте позже или свяжитесь с нами по контактам на сайте.';
+          else state.message = unknownDelivery;
+        }
+      } catch {
+        state.state = 'error';
+        state.message = unknownDelivery;
+      } finally {
+        clearTimeout(timer);
+        state.pending = false;
+        for (const target of forms) if (target.dataset.context === context) renderDelivery(target);
+        // A closed/reused modal must not steal focus or receive another context's errors.
+        if (fieldErrors && form.dataset.context === context && (form === inlineForm || dialog.open)) showFieldErrors(form, fieldErrors);
+      }
     });
     // Without JS, the inline submit remains disabled and cannot send a GET request.
     form.querySelector('[type="submit"]').disabled = false;
