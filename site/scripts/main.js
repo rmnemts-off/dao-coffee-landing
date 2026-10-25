@@ -1,6 +1,7 @@
 const menuButton = document.querySelector('.menu-toggle');
 const mobileMenu = document.querySelector('#mobile-menu');
 const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+const mobileLayout = matchMedia('(max-width: 960px), (hover: none), (pointer: coarse)');
 
 function closeMenu(restoreFocus = false) {
   menuButton.setAttribute('aria-expanded', 'false');
@@ -35,14 +36,7 @@ let headerHeight = siteHeader.offsetHeight;
 function showHeader(show) {
   if (headerHidden === !show) return;
   headerHidden = !show;
-  if (window.gsap) {
-    gsap.to(siteHeader, {
-      yPercent: show ? 0 : -105,
-      duration: reduced.matches ? 0 : (show ? .55 : .42),
-      ease: show ? 'power3.out' : 'power2.inOut',
-      overwrite: true
-    });
-  } else siteHeader.style.transform = show ? '' : 'translateY(-110%)';
+  siteHeader.toggleAttribute('data-hidden', headerHidden);
 }
 siteHeader.addEventListener('focusin', () => showHeader(true));
 menuButton.addEventListener('click', () => {
@@ -71,36 +65,85 @@ const stageSections = Array.from(document.querySelectorAll('[data-stage-color]')
 const toRgb = hex => [1, 3, 5].map(offset => parseInt(hex.slice(offset, offset + 2), 16));
 let stageStops = [];
 let lastStageColor = '';
+let lastHeaderColor = '';
+let stageTimer = 0;
+let layoutWidth = document.documentElement.clientWidth;
+let stableHeight = window.innerHeight;
+const editingForm = () => document.activeElement?.matches('input,textarea,select');
+const smoothStep = t => t * t * t * (t * (t * 6 - 15) + 10);
+const mixColor = (from, to, t) => from.map((value, i) => +(value + (to[i] - value) * t).toFixed(3));
+const colorCss = color => `rgb(${color.join(',')})`;
 function measureStage() {
-  const vh = window.innerHeight;
-  headerHeight = siteHeader.offsetHeight;
+  if (editingForm() || document.querySelector('#project-dialog[open]')) return;
+  const vh = mobileLayout.matches ? stableHeight : window.innerHeight;
+  const nextHeaderHeight = Math.ceil(siteHeader.getBoundingClientRect().height);
+  if (headerHeight !== nextHeaderHeight || !document.documentElement.style.getPropertyValue('--header-offset')) {
+    headerHeight = nextHeaderHeight;
+    document.documentElement.style.setProperty('--header-offset', `${headerHeight}px`);
+  }
   let from = toRgb(stageSections[0].dataset.stageColor);
+  let previousEnd = 0;
   stageStops = stageSections.slice(1).map((section, index) => {
     const top = section.getBoundingClientRect().top + window.scrollY;
-    const stop = { start: Math.max(index === 0 ? 80 : 0, top - vh * .95), end: top + vh * .05, from, to: toRgb(section.dataset.stageColor) };
+    const start = Math.max(previousEnd, index === 0 ? 80 : 0, top - vh * .95);
+    const stop = { start, end: Math.max(start + 1, top + vh * .05), from, to: toRgb(section.dataset.stageColor) };
+    previousEnd = stop.end;
     from = stop.to;
     return stop;
   });
+  if (mobileLayout.matches) {
+    // One document-sized gradient: no full-page colour writes while swiping.
+    // Sample the same easing used by the header, with stops wide enough to
+    // survive rounding and mobile browser toolbar changes without seams.
+    const stops = [`${colorCss(toRgb(stageSections[0].dataset.stageColor))} 0px`];
+    for (const stop of stageStops) {
+      for (let step = 0; step <= 8; step++) {
+        const t = step / 8;
+        stops.push(`${colorCss(mixColor(stop.from, stop.to, smoothStep(t)))} ${(stop.start + (stop.end - stop.start) * t).toFixed(1)}px`);
+      }
+    }
+    document.body.style.backgroundImage = `linear-gradient(180deg,${stops.join(',')})`;
+  } else document.body.style.backgroundImage = '';
+  document.body.classList.toggle('static-stage', mobileLayout.matches);
   paintStage(Math.max(0, window.scrollY));
 }
-function paintStage(y) {
+function stageColorAt(y) {
   let color = toRgb(stageSections[0].dataset.stageColor);
   for (const stop of stageStops) {
     if (y >= stop.end) { color = stop.to; continue; }
     if (y <= stop.start) break;
-    let t = (y - stop.start) / (stop.end - stop.start);
-    // Zero velocity and acceleration at each end; fractional channels avoid stepping.
-    t = t * t * t * (t * (t * 6 - 15) + 10);
-    color = stop.from.map((value, i) => +(value + (stop.to[i] - value) * t).toFixed(3));
+    const t = smoothStep((y - stop.start) / (stop.end - stop.start));
+    color = mixColor(stop.from, stop.to, t);
     break;
   }
-  const css = `rgb(${color.join(',')})`;
-  if (css !== lastStageColor) { document.body.style.backgroundColor = css; lastStageColor = css; }
+  return colorCss(color);
+}
+function paintStage(y) {
+  const css = stageColorAt(y);
+  if (!mobileLayout.matches && css !== lastStageColor) {
+    document.body.style.backgroundColor = css;
+    lastStageColor = css;
+  }
+  const headerColor = mobileLayout.matches ? stageColorAt(y + headerHeight / 2) : css;
+  if (headerColor !== lastHeaderColor) {
+    siteHeader.style.setProperty('--header-surface', headerColor);
+    lastHeaderColor = headerColor;
+  }
+}
+function queueStageMeasure() {
+  clearTimeout(stageTimer);
+  // A resizing accordion must not measure every section on every frame.
+  stageTimer = setTimeout(measureStage, 140);
 }
 let scrollFrame = 0;
 function onPageScroll() {
   scrollFrame = 0;
   const y = Math.max(0, Math.min(window.scrollY, document.documentElement.scrollHeight - window.innerHeight));
+  if (document.querySelector('#project-dialog[open]') || (mobileLayout.matches && editingForm())) {
+    previousY = y;
+    directionDistance = 0;
+    return;
+  }
   const delta = y - previousY;
   const now = performance.now();
   if (now - lastScrollTime > 180) directionDistance = 0;
@@ -110,8 +153,8 @@ function onPageScroll() {
   }
   siteHeader.toggleAttribute('data-scrolled', y > 24);
   if (y < 40 || !mobileMenu.hidden || siteHeader.querySelector(':focus-visible')) showHeader(true);
-  else if (directionDistance > 32 && y > headerHeight + 40) showHeader(false);
-  else if (directionDistance < -14) showHeader(true);
+  else if (directionDistance > (mobileLayout.matches ? 48 : 32) && y > headerHeight + 40) showHeader(false);
+  else if (directionDistance < (mobileLayout.matches ? -24 : -14)) showHeader(true);
   previousY = y;
   paintStage(y);
 }
@@ -121,13 +164,25 @@ window.addEventListener('scroll', () => {
 // Static section backgrounds remain the fallback when JavaScript is unavailable.
 measureStage();
 document.body.classList.add('scroll-stage');
-const stageResize = new ResizeObserver(measureStage);
+const stageResize = new ResizeObserver(queueStageMeasure);
 stageResize.observe(document.querySelector('main'));
-window.addEventListener('resize', measureStage, { passive: true });
-document.fonts.ready.then(measureStage);
-reduced.addEventListener('change', () => {
-  if (window.gsap) { gsap.killTweensOf(siteHeader); gsap.set(siteHeader, { yPercent: headerHidden ? -105 : 0 }); }
+stageResize.observe(siteHeader);
+window.addEventListener('resize', () => {
+  const width = document.documentElement.clientWidth;
+  if (mobileLayout.matches && width === layoutWidth) return;
+  layoutWidth = width;
+  stableHeight = window.innerHeight;
+  queueStageMeasure();
+}, { passive: true });
+mobileLayout.addEventListener('change', () => {
+  stableHeight = window.innerHeight;
+  queueStageMeasure();
 });
+document.fonts.ready.then(queueStageMeasure);
+document.addEventListener('focusout', event => {
+  if (event.target.matches('input,textarea,select')) queueStageMeasure();
+});
+document.querySelector('#project-dialog').addEventListener('close', queueStageMeasure);
 
 // One material at a time. CSS owns height; closed links leave the keyboard order.
 const materialItems = Array.from(document.querySelectorAll('.material-item.t-acc'));
@@ -154,11 +209,11 @@ function startPress(element) {
   finishPress(activePress, true);
   const previous = pressEffects.get(element);
   clearTimeout(previous?.timer);
-  const current = getComputedStyle(element).scale;
+  const current = getComputedStyle(element).transform;
   previous?.animation?.cancel();
   const state = { start: performance.now(), held: true };
   element.setAttribute('data-pressed', '');
-  state.animation = element.animate([{ scale: current === 'none' ? '1' : current }, { scale: element.matches('.cta,.header-cta,.menu-toggle,.brand') ? '.97' : '.985' }], { duration: 150, easing: 'cubic-bezier(.2,.6,.2,1)', fill: 'forwards' });
+  state.animation = element.animate([{ transform: current === 'none' ? 'scale(1)' : current }, { transform: element.matches('.cta,.header-cta,.menu-toggle,.brand') ? 'scale(.97)' : 'scale(.985)' }], { duration: 150, easing: 'cubic-bezier(.2,.6,.2,1)', fill: 'forwards' });
   pressEffects.set(element, state);
   activePress = element;
 }
@@ -167,10 +222,10 @@ function finishPress(element, immediate = false) {
   if (!state || !state.held) return;
   state.held = false;
   state.timer = setTimeout(() => {
-    const current = getComputedStyle(element).scale;
+    const current = getComputedStyle(element).transform;
     state.animation?.cancel();
     element.removeAttribute('data-pressed');
-    const animation = element.animate([{ scale: current === 'none' ? '1' : current }, { scale: '1' }], { duration: 260, easing: 'cubic-bezier(.16,1,.3,1)' });
+    const animation = element.animate([{ transform: current === 'none' ? 'scale(1)' : current }, { transform: 'scale(1)' }], { duration: 260, easing: 'cubic-bezier(.16,1,.3,1)' });
     state.animation = animation;
     animation.finished.then(() => {
       if (pressEffects.get(element) === state) pressEffects.delete(element);
@@ -203,7 +258,7 @@ reduced.addEventListener('change', () => {
 // Native scroll; one gentle reveal on entry, no pinning, scrub or scroll engine.
 if (window.gsap) {
   const media = gsap.matchMedia();
-  media.add('(prefers-reduced-motion: no-preference)', () => {
+  media.add('(min-width: 961px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)', () => {
     gsap.fromTo('.hero-content > *', { y: 18, opacity: .8 }, { y: 0, opacity: 1, duration: .9, stagger: .12, ease: 'power3.out', clearProps: 'transform,opacity' });
     const observer = new IntersectionObserver(entries => {
       for (const entry of entries) {
