@@ -1,6 +1,6 @@
 # DAO: частный мониторинг одного VPS
 
-Подготовлены конфигурации для установки и проверки на согласованном VPS. Аудит нового сервера 25.10.2026 подтвердил Ubuntu 24.04.1 amd64, cgroup v2 и 961 МиБ RAM (тариф с 1 ГБ); исходно swap отсутствовал. Этот документ сам по себе не подтверждает успешный запуск сервисов. Все команды ниже выполняются оператором **на согласованном VPS**, кроме явно отмеченного SSH-туннеля. Эти файлы не меняют nginx, API, домен или DNS.
+Мониторинг установлен и проверен после перезагрузки согласованного VPS; фактические версии, результаты и ограничения проверки описаны в [статусе от 25.10.2026](../STATUS.md). После обновления на сервере Ubuntu 24.04.5 amd64, cgroup v2, 961 МиБ RAM (тариф с 1 ГБ) и 2 ГиБ swap. Все команды ниже выполняются оператором **на согласованном VPS**, кроме явно отмеченного SSH-туннеля. Эти файлы не меняют nginx, API, домен или DNS.
 
 Состав: Grafana OSS → локальный Prometheus → node_exporter. Native systemd, без Docker, Loki, Alertmanager, агентов логов и внешней отправки метрик. Собираются CPU, RAM, локальные диски, сеть, load average и uptime ОС. Заявки, телефоны, токены и журналы запросов в Prometheus не поступают. Дашборд не проверяет сайт, процесс Node.js или доставку Bitrix24.
 
@@ -110,4 +110,6 @@ sudo apt-get remove grafana prometheus prometheus-node-exporter
 
 ## Статус проверки комплекта
 
-Локально проверяются shell-синтаксис, JSON/INI и согласованность файлов. На macOS не выполняются `apt`, systemd и Linux collectors; `promtool` и Grafana здесь не установлены. До получения ОС/SSH не заявлять, что комплект установлен или прошёл runtime-проверку. Поддерживаемые пути бинарников соответствуют пакетам [Debian node_exporter](https://packages.debian.org/bookworm/amd64/prometheus-node-exporter/filelist); collectors и метрики описаны в [официальном node_exporter](https://github.com/prometheus/node_exporter#collectors) и [руководстве Prometheus](https://prometheus.io/docs/guides/node-exporter/).
+После реальной перезагрузки VPS прошли `validate.sh`, проверка приватных listeners, авторизованный вход через API Grafana и все 13 различных запросов дашборда через datasource proxy. Службы включены в автозагрузку и работают без повторных рестартов. Визуальная проверка браузером и нагрузочная проверка полной связки ещё не выполнены. Полный [аудит установки](../STATUS.md) также фиксирует особый порядок обновления Grafana после `403` официального APT с VPS; fresh-only установщик для обновления не использовать.
+
+Локальные проверки shell-синтаксиса, JSON/INI и согласованности файлов дополняют проверку на Linux. Collectors и метрики описаны в [официальном node_exporter](https://github.com/prometheus/node_exporter#collectors) и [руководстве Prometheus](https://prometheus.io/docs/guides/node-exporter/).
