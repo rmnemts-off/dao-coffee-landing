@@ -1,0 +1,568 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Дизайн-система DAO COFFEE GROUP</title>
+<meta name="description" content="Токены, компоненты и микровзаимодействия лендинга DAO COFFEE GROUP по руководству по фирменному стилю.">
+<link rel="icon" href="/assets/dao-mark.svg" type="image/svg+xml">
+<link rel="preload" href="/assets/fonts/ysabeau-office.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/fira-sans-light.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/styles/design.css">
+<link rel="stylesheet" href="/design-system/docs.css">
+<script src="/scripts/effects.js" defer></script>
+<script src="/design-system/docs.js" defer></script>
+</head>
+<body>
+<a class="skip-link" href="#intro">К содержанию</a>
+
+<header class="ds-cover topo topo-green topo-trail" data-topo-lit>
+  <div class="ds-cover-panel">
+    <p class="ds-cover-word" aria-hidden="true">DAO<br>COFFEE<br>GROUP</p>
+    <h1 class="ds-cover-title">Дизайн-система сайта</h1>
+    <p class="ds-cover-sub">Собрана по руководству по фирменному стилю. Каждый блок здесь готов к переносу на лендинг: те же цвета, шрифты, классы и правила.</p>
+  </div>
+</header>
+
+<div class="ds-shell">
+  <nav class="ds-nav" aria-label="Разделы дизайн-системы">
+    <img class="ds-nav-logo" src="/assets/dao-logo.svg" width="446" height="96" alt="DAO COFFEE GROUP">
+    <ol>
+      <li><a href="#intro"><i class="dot"></i><span class="num"></span><span>Введение</span></a></li>
+      <li><a href="#logo"><i class="dot"></i><span class="num">01</span><span>Логотип</span></a></li>
+      <li><a href="#color"><i class="dot"></i><span class="num">02</span><span>Цвета</span></a></li>
+      <li><a href="#type"><i class="dot"></i><span class="num">03</span><span>Шрифты</span></a></li>
+      <li><a href="#pattern"><i class="dot"></i><span class="num">04</span><span>Паттерн и тропа</span></a></li>
+      <li><a href="#layout"><i class="dot"></i><span class="num">05</span><span>Сетка и форма</span></a></li>
+      <li><a href="#buttons"><i class="dot"></i><span class="num">06</span><span>Кнопки и ссылки</span></a></li>
+      <li><a href="#forms"><i class="dot"></i><span class="num">07</span><span>Формы</span></a></li>
+      <li><a href="#blocks"><i class="dot"></i><span class="num">08</span><span>Блоки лендинга</span></a></li>
+      <li><a href="#icons"><i class="dot"></i><span class="num">09</span><span>Иконки</span></a></li>
+      <li><a href="#motion"><i class="dot"></i><span class="num">10</span><span>Движение</span></a></li>
+      <li><a href="#voice"><i class="dot"></i><span class="num">11</span><span>Фото и голос</span></a></li>
+    </ol>
+    <label class="ds-motion-toggle"><input class="check" type="checkbox" id="motion-off"> Посмотреть без движения</label>
+  </nav>
+
+  <main class="ds-main">
+
+    <!-- ===== Введение ===== -->
+    <section class="ds-chapter" id="intro" aria-labelledby="intro-title">
+      <div class="ds-head">
+        <h2 class="h2" id="intro-title">Введение</h2>
+        <p class="ds-intro">Фирменный стиль построен на метафоре пути: клиент для DAO партнёр и попутчик, компания ведёт его по тропе к новым вершинам. Отсюда топографический паттерн, пунктир тропы и слоган «вместе к новым вершинам». Сайт переносит эту идею в спокойный светлый интерфейс, где главное место отдано оборудованию.</p>
+      </div>
+      <div class="bubbles" data-reveal>
+        <p class="bubble bubble-q">Что такое Группа кофейных компаний ДАО?</p>
+        <p class="bubble bubble-a">Удобный сервис с отличным качеством кофе, доступный потребителям.</p>
+        <p class="bubble bubble-q">Как мы подходим к процессам?</p>
+        <p class="bubble bubble-a">Стремимся создавать лучший сервис в нашем сегменте с вниманием к клиенту и его болям.</p>
+        <p class="bubble bubble-q">Почему мы делаем то, что делаем?</p>
+        <p class="bubble bubble-a">Мы верим, что любую задачу можно решить сообща, каждый клиент для нас партнёр и попутчик, а мы гид, ведущий по тропе к новым вершинам.</p>
+      </div>
+      <p class="ds-note">Диалог взят из введения брендбука. Формат пузырей тоже фирменный и подходит для блока вопросов и ответов, если он появится на сайте.</p>
+      <div class="ds-block">
+        <h3 class="ds-sub">Пять принципов интерфейса</h3>
+        <ol class="principles">
+          <li class="principle"><span class="num">1</span><h3>Светлый холст</h3><p>Фон страницы светлый и плавно перетекает между серым, шалфейным и песочным. Тёмных секций и резких переходов нет, цвет текста не переключается.</p></li>
+          <li class="principle"><span class="num">2</span><h3>Зелёный отвечает за действие</h3><p>Фирменный зелёный достаётся кнопкам, фокусу и номерам глав. Бежевый работает линиями и светом и никогда не становится цветом текста.</p></li>
+          <li class="principle"><span class="num">3</span><h3>Тропа вместо декора</h3><p>Пунктир из паттерна связывает элементы: подчёркивает ссылки, ведёт по карте на плашках. Разделы отделяет плавная смена фона, а не линии. Других украшений не добавляем.</p></li>
+          <li class="principle"><span class="num">4</span><h3>Товару нужна тишина</h3><p>Оборудование стоит без рамок и подложек, с мягкой тенью по силуэту. Карточки достаются только компактным линейкам моделей.</p></li>
+          <li class="principle"><span class="num">5</span><h3>Мелочи с характером</h3><p>Свет под курсором, бегущий пунктир, флажок на вершине. Одно тихое движение на элемент, только для мыши и только без режима «меньше движения».</p></li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ===== 01 Логотип ===== -->
+    <section class="ds-chapter" id="logo" aria-labelledby="logo-title">
+      <div class="ds-head">
+        <h2 class="index-title" id="logo-title"><span class="index">01.</span> Логотип</h2>
+        <p class="ds-intro">Две композиции: основная, где надпись стоит в три строки справа от эмблемы, и дополнительная в одну строку. У обеих есть версия со слоганом и без. Файлы берём только из папки бренда и вставляем как есть, без перерисовки.</p>
+      </div>
+      <div class="logo-cards">
+        <figure class="logo-card">
+          <div class="logo-stage surface-line" style="--w:210px"><img src="/assets/dao-logo-stacked.svg" width="339" height="188" alt="Основная версия логотипа со слоганом"></div>
+          <figcaption><h3>Основная, со слоганом</h3><p class="ds-note">Крупные носители: обложки, документы, упаковка.</p></figcaption>
+        </figure>
+        <figure class="logo-card">
+          <div class="logo-stage surface-gray" style="--w:250px"><img src="/assets/dao-logo.svg" width="446" height="96" alt="Горизонтальная версия логотипа со слоганом"></div>
+          <figcaption><h3>Горизонтальная, со слоганом</h3><p class="ds-note"><strong>На лендинге:</strong> шапка и футер, ширина 220-236 px. Файл <code>dao-logo.svg</code>.</p></figcaption>
+        </figure>
+        <figure class="logo-card">
+          <div class="logo-stage topo topo-cream topo-trail" data-topo-lit style="--w:250px"><img src="/assets/dao-logo-plate.svg" width="446" height="96" alt="Логотип на фирменной зелёной плашке"></div>
+          <figcaption><h3>На фирменной плашке</h3><p class="ds-note">Любой цветной, сложный или фотографический фон. На белом плашка не нужна.</p></figcaption>
+        </figure>
+        <figure class="logo-card wide">
+          <div class="logo-stage surface-line" style="--w:250px"><img src="/assets/dao-logo-compact.svg" width="564" height="102" alt="Логотип без слогана с упрощённой эмблемой"></div>
+          <figcaption><h3>Без слогана, упрощённая эмблема</h3><p class="ds-note">Малые размеры и грубая печать: вышивка, чеки, места, где слоган не читается.</p></figcaption>
+        </figure>
+        <figure class="logo-card wide">
+          <div class="logo-stage surface-line" style="--w:64px"><img src="/assets/dao-mark.svg" width="125" height="165" alt="Эмблема DAO"></div>
+          <figcaption><h3>Эмблема</h3><p class="ds-note"><strong>На лендинге:</strong> значок вкладки браузера. Файл <code>dao-mark.svg</code>.</p></figcaption>
+        </figure>
+      </div>
+
+      <div class="ds-block">
+        <h3 class="ds-sub">Охранное поле</h3>
+        <p class="ds-sub-note">Единица отсчёта: буква «D» из логотипа. В брендбуке для горизонтальной версии со слоганом задан коэффициент ×0,5, для горизонтальной без слогана ×1,5, для основной ×2. Внутри поля нет текста, краёв блока и других элементов.</p>
+        <div class="clearspace surface-cream ds-surface">
+          <div class="clearspace-box"><span class="d d-top">D</span><span class="d d-left">D</span><span class="d d-right">D</span><span class="d d-bottom">D</span><img src="/assets/dao-logo.svg" width="446" height="96" alt="Горизонтальный логотип с размеченным охранным полем"></div>
+        </div>
+      </div>
+
+      <div class="ds-block">
+        <h3 class="ds-sub">Так нельзя</h3>
+        <div class="donts">
+          <figure class="dont-card"><div class="dont-stage dont-stretch"><img src="/assets/dao-logo.svg" width="446" height="96" alt=""></div><figcaption><p>Растягивать и сжимать по одной оси.</p></figcaption></figure>
+          <figure class="dont-card"><div class="dont-stage dont-glow"><img src="/assets/dao-logo.svg" width="446" height="96" alt=""></div><figcaption><p>Добавлять тень, свечение, градиент и другие эффекты.</p></figcaption></figure>
+          <figure class="dont-card"><div class="dont-stage topo topo-trail dont-noise"><img src="/assets/dao-logo.svg" width="446" height="96" alt=""></div><figcaption><p>Ставить без плашки на плотный «шумный» фон.</p></figcaption></figure>
+          <figure class="dont-card"><div class="dont-stage dont-tight"><div class="tight-wrap"><img src="/assets/dao-logo.svg" width="446" height="96" alt=""><span>Подбор и поставка оборудования</span></div></div><figcaption><p>Нарушать охранное поле текстом и краями.</p></figcaption></figure>
+        </div>
+        <p class="ds-note">Ещё два запрета из брендбука: менять композицию внутри логотипа и использовать контурную версию. На сайте логотип не анимируется и не реагирует на наведение.</p>
+      </div>
+    </section>
+
+    <!-- ===== 02 Цвета ===== -->
+    <section class="ds-chapter" id="color" aria-labelledby="color-title">
+      <div class="ds-head">
+        <h2 class="index-title" id="color-title"><span class="index">02.</span> Цвета</h2>
+        <p class="ds-intro">Шесть фирменных цветов из брендбука плюс три производных оттенка, согласованных для сайта. Арки повторяют палитру брендбука: каждая следующая выше, как ступени к вершине. Нажмите на цвет, чтобы скопировать HEX.</p>
+      </div>
+      <div class="ds-block">
+        <div class="arches" data-reveal>
+          <button class="arch" type="button" data-copy="#1D644F" style="--i:0;--swatch:var(--green);--swatch-ink:var(--white)"><strong>Зелёный</strong><span>#1D644F</span><span class="rgb">RGB 29 100 79</span><span class="cmyk">CMYK 85 35 70 30</span></button>
+          <button class="arch" type="button" data-copy="#D2A87D" style="--i:1;--swatch:var(--beige);--swatch-ink:var(--ink)"><strong>Бежевый</strong><span>#D2A87D</span><span class="rgb">RGB 210 168 125</span><span class="cmyk">CMYK 17 35 53 5</span></button>
+          <button class="arch" type="button" data-copy="#F4EAE5" style="--i:2;--swatch:var(--cream);--swatch-ink:var(--ink)"><strong>Кремовый</strong><span>#F4EAE5</span><span class="rgb">RGB 244 234 229</span><span class="cmyk">CMYK 5 9 10 0</span></button>
+          <button class="arch" type="button" data-copy="#DADADA" style="--i:3;--swatch:var(--gray);--swatch-ink:var(--ink)"><strong>Серый</strong><span>#DADADA</span><span class="rgb">RGB 218 218 218</span><span class="cmyk">CMYK 0 0 0 20</span></button>
+          <button class="arch" type="button" data-copy="#040606" style="--i:4;--swatch:var(--black);--swatch-ink:var(--white);--shade:#2a2c2c"><strong>Чёрный</strong><span>#040606</span><span class="rgb">RGB 4 6 6</span></button>
+          <button class="arch arch-white" type="button" data-copy="#FFFFFF" style="--i:5;--swatch:var(--white);--swatch-ink:var(--ink)"><strong>Белый</strong><span>#FFFFFF</span><span class="rgb">RGB 255 255 255</span></button>
+        </div>
+        <div class="arches-base"></div>
+        <p class="ds-note">В брендбуке у чёрного и белого по ошибке стоят значения серого, поэтому для них взяты значения, согласованные для сайта. CMYK нужен только для печати.</p>
+      </div>
+
+      <div class="ds-block">
+        <h3 class="ds-sub">Оттенки сайта</h3>
+        <div class="chips">
+          <button class="chip-swatch" type="button" data-copy="#193E32" style="--swatch:var(--ink)"><i></i><strong>Тёмно-зелёный текст</strong><span>#193E32. Заголовки и основной текст вместо чистого чёрного.</span></button>
+          <button class="chip-swatch" type="button" data-copy="#BBC9C1" style="--swatch:var(--sage)"><i></i><strong>Шалфейный</strong><span>#BBC9C1. Фон DrinkX, LinkBar, «Гейзера» и контактов.</span></button>
+          <button class="chip-swatch" type="button" data-copy="#EEE4DA" style="--swatch:var(--sand)"><i></i><strong>Песочный</strong><span>#EEE4DA. Фон Wendougee, кофе, XLVI / Ceado и комплектации.</span></button>
+          <button class="chip-swatch" type="button" data-copy="rgb(25 62 50 / .82)" style="--swatch:var(--text-muted)"><i></i><strong>Приглушённый текст</strong><span>Тёмно-зелёный 82%. Описания и подписи.</span></button>
+          <button class="chip-swatch" type="button" data-copy="rgb(25 62 50 / .16)" style="--swatch:var(--line)"><i></i><strong>Линия</strong><span>Тёмно-зелёный 16%. Разделители и контуры.</span></button>
+          <button class="chip-swatch" type="button" data-copy="#9A342C" style="--swatch:var(--error)"><i></i><strong>Ошибка</strong><span>#9A342C. Только сообщения формы.</span></button>
+        </div>
+      </div>
+
+      <div class="ds-block">
+        <h3 class="ds-sub">Пропорции на экране</h3>
+        <div class="proportion" role="img" aria-label="Примерные пропорции: светлые фоны занимают большую часть, затем текст, зелёный и немного бежевого">
+          <span style="--f:70;background:linear-gradient(90deg,var(--gray),var(--sage) 50%,var(--sand))">Светлые фоны</span>
+          <span style="--f:16;background:var(--ink);color:var(--cream)">Текст</span>
+          <span style="--f:9;background:var(--green);color:var(--cream)">Зелёный</span>
+          <span style="--f:5;background:var(--beige)"></span>
+        </div>
+        <p class="ds-note">Примерный баланс. Бежевого мало: тонкие линии паттерна, пунктир тропы, тёплый свет под курсором.</p>
+      </div>
+
+      <div class="ds-block">
+        <h3 class="ds-sub">Контраст пар</h3>
+        <div class="contrast-list" id="contrast-list">
+          <div class="contrast" data-fg="#193E32" data-bg="#DADADA"><span class="sample" style="background:var(--gray);color:var(--ink)">Аа</span><p class="pair">Текст на сером, первый экран</p><p class="ratio"></p></div>
+          <div class="contrast" data-fg="#193E32" data-fg-alpha=".82" data-bg="#BBC9C1"><span class="sample" style="background:var(--sage);color:var(--text-muted)">Аа</span><p class="pair">Приглушённый текст на шалфейном</p><p class="ratio"></p></div>
+          <div class="contrast" data-fg="#F4EAE5" data-bg="#1D644F"><span class="sample" style="background:var(--green);color:var(--cream)">Аа</span><p class="pair">Кремовый на зелёном, кнопка</p><p class="ratio"></p></div>
+          <div class="contrast" data-fg="#1D644F" data-bg="#F4EAE5"><span class="sample" style="background:var(--cream);color:var(--green)">Аа</span><p class="pair">Зелёный на кремовом</p><p class="ratio"></p></div>
+          <div class="contrast" data-fg="#9A342C" data-bg="#F4EAE5"><span class="sample" style="background:var(--cream);color:var(--error)">Аа</span><p class="pair">Ошибка в форме</p><p class="ratio"></p></div>
+          <div class="contrast" data-fg="#D2A87D" data-bg="#F4EAE5"><span class="sample" style="background:var(--cream);color:var(--beige)">Аа</span><p class="pair">Бежевый на кремовом: только линии</p><p class="ratio"></p></div>
+        </div>
+        <p class="ds-note">Значения считаются прямо на странице по формуле WCAG. Норма для обычного текста 4,5:1, для крупного 3:1.</p>
+      </div>
+    </section>
+
+    <!-- ===== 03 Шрифты ===== -->
+    <section class="ds-chapter" id="type" aria-labelledby="type-title">
+      <div class="ds-head">
+        <h2 class="index-title" id="type-title"><span class="index">03.</span> Шрифты</h2>
+        <p class="ds-intro">Ysabeau Office Bold рисует логотип и все заголовки. Fira Sans Light набирает тексты и информационные блоки. Оба семейства распространяются по лицензии Open Font License и подключены локально, файлы лицензий лежат рядом со шрифтами.</p>
+      </div>
+      <div class="specimens">
+        <div class="specimen surface-cream" style="font-family:var(--heading)">
+          <p class="aa" style="font-weight:700">Аа</p>
+          <h3>Ysabeau Office</h3>
+          <div class="weights">
+            <span style="font-weight:500">Вместе к вершинам <small>500 лид</small></span>
+            <span style="font-weight:600">Вместе к вершинам <small>600</small></span>
+            <span style="font-weight:700">Вместе к вершинам <small>700 заголовок</small></span>
+            <span style="font-weight:800">Вместе к вершинам <small>800</small></span>
+          </div>
+          <p class="ds-note">Переменный шрифт: в проекте доступна любая насыщенность. В работе держим две: 700 для заголовков и 500 для лидов.</p>
+        </div>
+        <div class="specimen surface-sand" style="font-family:var(--body)">
+          <p class="aa" style="font-weight:300">Аа</p>
+          <h3 style="font-family:var(--heading)">Fira Sans</h3>
+          <div class="weights">
+            <span style="font-weight:300">Вместе к вершинам <small>300 текст</small></span>
+            <span style="font-weight:400">Вместе к вершинам <small>400 кнопки</small></span>
+            <span style="font-weight:500">Вместе к вершинам <small>500 акцент</small></span>
+          </div>
+          <p class="ds-note">Подключены три начертания. Курсива в проекте нет: если понадобится цитата, добавим файл Light Italic из папки бренда.</p>
+        </div>
+      </div>
+
+      <div class="ds-block">
+        <h3 class="ds-sub">Шкала</h3>
+        <p class="ds-sub-note">Размеры плавные: растут от телефона шириной 375 px до экрана 1920 px и дальше не увеличиваются. В формулах rem вместе с vw, поэтому масштабирование браузера работает. Иерархия строится сразу размером, насыщенностью и цветом: название, лид, подзаголовки пунктов, текст.</p>
+        <div class="type-scale">
+          <div class="type-row"><p class="display">Автоматизация кофейного бизнеса</p><div class="type-meta"><code>--fs-hero</code><span>52-112 px, Ysabeau 700, 1.0</span><span>Заголовок первого экрана</span></div></div>
+          <div class="type-row"><p class="h1">DrinkX</p><div class="type-meta"><code>--fs-brand</code><span>44-112 px, Ysabeau 700, 1.0</span><span>Название бренда; у DrinkX на ступень крупнее</span></div></div>
+          <div class="type-row"><p class="h2">Подбор и комплектация</p><div class="type-meta"><code>--fs-h2</code><span>36-84 px, Ysabeau 700</span><span>Крупные блоки</span></div></div>
+          <div class="type-row"><p class="person">Дмитрий Онищук</p><div class="type-meta"><code>--fs-person</code><span>32-60 px, Ysabeau 700</span><span>Имя основателя</span></div></div>
+          <div class="type-row"><p class="subtitle">Кофейные станции без бариста</p><div class="type-meta"><code>--fs-subtitle</code><span>22-38 px, Ysabeau 600, зелёный</span><span>Что делает бренд, под его названием</span></div></div>
+          <div class="type-row"><p class="h3">Обсудить ваш проект</p><div class="type-meta"><code>--fs-h3</code><span>30-48 px, Ysabeau 700</span><span>Заголовок формы</span></div></div>
+          <div class="type-row"><p class="lead">Кофейная точка, где гость выбирает напиток на экране, а станция готовит его без участия бариста.</p><div class="type-meta"><code>--fs-lead</code><span>19-28 px, Ysabeau 500, 1.38</span><span>Главный текст раздела, читается сразу после названия</span></div></div>
+          <div class="type-row"><p class="fact">Станции S100 / S400</p><div class="type-meta"><code>--fs-fact</code><span>17-22 px, Ysabeau 700</span><span>Подзаголовок пункта, контакты</span></div></div>
+          <div class="type-row"><p class="h4">AEROMILK</p><div class="type-meta"><code>--fs-card</code><span>15-21 px, Ysabeau 700</span><span>Карточки моделей</span></div></div>
+          <div class="type-row"><p class="text">Подберём машину и кофемолку под меню и нагрузку кофейни. Учтём размеры стойки и то, как работает ваша команда.</p><div class="type-meta"><code>--fs-body</code><span>16-19.5 px, Fira 300, 1.55</span><span>Основной текст, строка до 58 знаков</span></div></div>
+          <div class="type-row"><p class="label">Заявка на DrinkX</p><div class="type-meta"><code>--fs-label</code><span>15-18 px, Fira 400</span><span>Кнопки, меню, подписи полей</span></div></div>
+          <div class="type-row"><p class="caption">Ростов-на-Дону, филиал</p><div class="type-meta"><code>--fs-small</code><span>13.5-16 px, Fira 300</span><span>Подписи и метки</span></div></div>
+        </div>
+      </div>
+
+      <div class="ds-block">
+        <h3 class="ds-sub">Пример вёрстки</h3>
+        <div class="type-sample ds-surface surface-gray">
+          <p class="h2">Приветствуем кофейных энтузиастов!</p>
+          <p class="lead">Подбираем и поставляем оборудование разных брендов для кофеен, офисов и сетей. Помогаем запускать кофе-точки без бариста.</p>
+          <p class="text">Как в примере из брендбука: заголовок набран Ysabeau Bold, лид Ysabeau средней насыщенности, основной текст Fira Sans Light. Строка текста не длиннее 65 знаков, заголовки выравниваются по балансу строк.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 04 Паттерн ===== -->
+    <section class="ds-chapter" id="pattern" aria-labelledby="pattern-title">
+      <div class="ds-head">
+        <h2 class="index-title" id="pattern-title"><span class="index">04.</span> Паттерн и тропа</h2>
+        <p class="ds-intro">Топографические линии продолжают тему пути и движения к вершинам. Контуры взяты из брендбука без изменений, пунктир повторяет тропу с фирменного паттерна. Наведите курсор: линии проявляются вокруг него, как карта под фонариком.</p>
+      </div>
+      <div class="topo-tiles">
+        <figure class="topo-tile">
+          <div class="topo topo-gray" data-topo-lit><span>Серый, белые линии</span></div>
+          <figcaption><h3>Первый экран</h3><p class="ds-note"><strong>На лендинге:</strong> фон hero. Класс <code>.topo</code>.</p></figcaption>
+        </figure>
+        <figure class="topo-tile">
+          <div class="topo topo-cream topo-trail" data-topo-lit><span>Кремовый, бежевые линии и тропа</span></div>
+          <figcaption><h3>Тёплая плашка</h3><p class="ds-note">Вставки в документах и презентациях. На лендинге раздел «Комплектация» открытый, без плашки. Классы <code>.topo-cream .topo-trail</code>.</p></figcaption>
+        </figure>
+        <figure class="topo-tile">
+          <div class="topo topo-green topo-trail" data-topo-lit><span>Зелёный, белые линии и тропа</span></div>
+          <figcaption><h3>Малые плашки</h3><p class="ds-note">Плашка логотипа, небольшие вставки. Во всю ширину лендинга не используем.</p></figcaption>
+        </figure>
+      </div>
+
+      <div class="ds-block">
+        <h3 class="ds-sub">Тропа</h3>
+        <div class="trail-demo">
+          <svg class="trail-rule" data-trail viewBox="0 0 1000 60" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M6 44C120 40 170 12 300 18S470 52 590 40 780 6 994 14"/>
+          </svg>
+          <div class="trail-ends"><span>Первый экран</span><span>Форма заявки</span></div>
+        </div>
+        <p class="ds-note">Пунктир рисуется один раз, когда попадает в экран, и начинает бежать при наведении. Компонент для документов и презентаций. <strong>На лендинге</strong> тропа живёт в подчёркивании ссылок и на картах плашек; разделителей между разделами нет, их отделяет смена фона.</p>
+      </div>
+
+      <div class="ds-rules">
+        <div class="ds-rule do"><h4><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.2 4L19 7"/></svg>Так</h4><ul><li>Паттерн всегда под контентом и спокойнее текста.</li><li>Текст на карте получает ореол цвета плашки, как подписи на топографической карте: линии обрываются у букв, а сама карта видна целиком.</li><li>Цвет линий только из палитры: белый, бежевый.</li><li>Тропа ведёт к действию, а не просто украшает.</li></ul></div>
+        <div class="ds-rule dont"><h4><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>Нельзя</h4><ul><li>Рисовать свои контуры или поворачивать рисунок брендбука.</li><li>Прятать карту под градиентом, чтобы освободить место для текста.</li><li>Делать паттерн тёмным фоном целой секции лендинга.</li></ul></div>
+      </div>
+    </section>
+
+    <!-- ===== 05 Сетка и форма ===== -->
+    <section class="ds-chapter" id="layout" aria-labelledby="layout-title">
+      <div class="ds-head">
+        <h2 class="index-title" id="layout-title"><span class="index">05.</span> Сетка и форма</h2>
+        <p class="ds-intro">Одна страница с обычной вертикальной прокруткой. Контент держится в контейнере, поля растут вместе с экраном. Формы мягкие: брендбук описывает образ компании как треугольник со скруглёнными углами.</p>
+      </div>
+      <div class="spec-cards">
+        <div class="spec-card"><strong>до 2240 px</strong><span>Контейнер <code>--container</code>: страница занимает ширину экрана</span></div>
+        <div class="spec-card"><strong>20-120 px</strong><span>Боковые поля <code>--gutter</code></span></div>
+        <div class="spec-card"><strong>44-88 px</strong><span>Отступ раздела <code>--section-pad</code></span></div>
+        <div class="spec-card"><strong>1280, 960, 640</strong><span>Меню в кнопку, одна колонка, телефон; плюс 360</span></div>
+      </div>
+
+      <div class="ds-block">
+        <h3 class="ds-sub">Отступы</h3>
+        <div class="space-scale">
+          <div class="space-row"><code>--space-1</code><span>4 px</span><i style="--s:4px"></i></div>
+          <div class="space-row"><code>--space-2</code><span>8 px</span><i style="--s:8px"></i></div>
+          <div class="space-row"><code>--space-3</code><span>12 px</span><i style="--s:12px"></i></div>
+          <div class="space-row"><code>--space-4</code><span>16 px</span><i style="--s:16px"></i></div>
+          <div class="space-row"><code>--space-5</code><span>24 px</span><i style="--s:24px"></i></div>
+          <div class="space-row"><code>--space-6</code><span>32 px</span><i style="--s:32px"></i></div>
+          <div class="space-row"><code>--space-7</code><span>48 px</span><i style="--s:48px"></i></div>
+          <div class="space-row"><code>--space-8</code><span>72 px</span><i style="--s:72px"></i></div>
+          <div class="space-row"><code>--space-9</code><span>96 px</span><i style="--s:96px"></i></div>
+        </div>
+        <p class="ds-note">Близкое ставим близко: название и лид 18-32 px, лид и пункты 24-44 px, пункты между собой 18-28 px, раздел от раздела <code>--section-pad</code>. Между колонками картинки и текста <code>--column-gap</code>, 32-144 px.</p>
+      </div>
+
+      <div class="ds-block">
+        <h3 class="ds-sub">Скругления</h3>
+        <div class="radius-demo">
+          <figure><div class="shape" style="border-radius:var(--radius-field)"></div><figcaption><code>--radius-field</code> 8 px, поля ввода и варианты выбора</figcaption></figure>
+          <figure><div class="shape" style="border-radius:var(--radius-card)"></div><figcaption><code>--radius-card</code> 10 px, карточки и плашки</figcaption></figure>
+          <figure><div class="shape" style="border-radius:var(--radius-pill);height:56px;align-self:center"></div><figcaption><code>--radius-pill</code>, все кнопки</figcaption></figure>
+          <figure><div class="shape" style="border-radius:999px 999px 0 0;width:72px;height:96px"></div><figcaption>Арка, палитра и иллюстрации</figcaption></figure>
+        </div>
+      </div>
+
+      <div class="ds-block">
+        <h3 class="ds-sub">Глубина</h3>
+        <div class="depth-demo">
+          <figure><img src="/assets/products/drinkx-user-station.webp" width="991" height="1331" alt="Станция DrinkX с тенью по силуэту" style="filter:var(--shadow-product)"><figcaption><code>--shadow-product</code><br>Крупный товар: мягкая тень по силуэту, не по прямоугольнику.</figcaption></figure>
+          <figure><img src="/assets/products/drinkx-aeromilk-catalog.webp" width="1400" height="1400" alt="Модуль AEROMILK с лёгкой тенью" style="filter:var(--shadow-thumb);height:110px;margin-block:20px"><figcaption><code>--shadow-thumb</code><br>Миниатюры в карточках моделей.</figcaption></figure>
+          <figure><div class="model" style="width:150px;box-shadow:var(--shadow-lift)"><div class="model-picture"><img src="/assets/products/drinkx-flow-x-catalog.webp" width="1400" height="1400" alt=""></div><div class="model-caption"><h3>FLOW-X</h3><p>Нагрев воды</p></div></div><figcaption><code>--shadow-lift</code><br>Редко: всплывающие элементы и меню.</figcaption></figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 06 Кнопки ===== -->
+    <section class="ds-chapter" id="buttons" aria-labelledby="buttons-title">
+      <div class="ds-head">
+        <h2 class="index-title" id="buttons-title"><span class="index">06.</span> Кнопки и ссылки</h2>
+        <p class="ds-intro">Все кнопки капсульные и без стрелок. Под курсором внутри кнопки загорается мягкий свет, при нажатии она чуть проседает. Подпись короткая и называет действие.</p>
+      </div>
+      <div class="ds-grid" style="--cols:3">
+        <figure class="ds-block ds-surface surface-gray"><div><button class="cta" type="button" data-spotlight>Обсудить ваш проект</button></div><figcaption><h3 class="h4">Контурная <code>.cta</code></h3><p class="ds-note"><strong>На лендинге:</strong> первый экран, одна на страницу.</p></figcaption></figure>
+        <figure class="ds-block ds-surface surface-sage"><div><button class="product-cta" type="button" data-spotlight>Заявка на DrinkX</button></div><figcaption><h3 class="h4">Основная <code>.product-cta</code></h3><p class="ds-note"><strong>На лендинге:</strong> заявки по брендам и комплектации, отправка формы.</p></figcaption></figure>
+        <figure class="ds-block ds-surface topo topo-green"><div><button class="cta-light" type="button" data-spotlight>Подбор и комплектация</button></div><figcaption><h3 class="h4" style="color:var(--cream)">Светлая <code>.cta-light</code></h3><p class="ds-note" style="color:rgb(244 234 229 / .82)">Только на зелёной плашке.</p></figcaption></figure>
+      </div>
+
+      <div class="ds-block">
+        <h3 class="ds-sub">Состояния</h3>
+        <div class="state-grid ds-surface surface-sage">
+          <figure><button class="product-cta" type="button" tabindex="-1">Заявка на DrinkX</button><figcaption>Обычная</figcaption></figure>
+          <figure><button class="product-cta is-hover" type="button" tabindex="-1">Заявка на DrinkX</button><figcaption>Наведение: тёмно-зелёный и свет</figcaption></figure>
+          <figure><button class="product-cta is-focus" type="button" tabindex="-1">Заявка на DrinkX</button><figcaption>Фокус с клавиатуры: обводка 2 px</figcaption></figure>
+          <figure><button class="product-cta is-pressed" type="button" tabindex="-1">Заявка на DrinkX</button><figcaption>Нажатие: масштаб 0,97</figcaption></figure>
+          <figure><button class="product-cta" type="button" disabled>Заявка на DrinkX</button><figcaption>Недоступна: 50%</figcaption></figure>
+        </div>
+      </div>
+
+      <div class="ds-block">
+        <h3 class="ds-sub">Ссылки с тропой</h3>
+        <div class="ds-surface surface-gray ds-block">
+          <nav class="nav-demo" aria-label="Пример меню"><a class="trail-link" href="#buttons" aria-current="true">DrinkX</a><a class="trail-link" href="#buttons">Wendougee</a><a class="trail-link" href="#buttons">LinkBar</a><a class="trail-link" href="#buttons">Кофе и СТМ</a><a class="trail-link" href="#buttons">XLVI / Ceado</a><a class="trail-link" href="#buttons">Водоподготовка</a><a class="trail-link" href="#buttons">Комплектация</a></nav>
+        </div>
+        <p class="ds-note">Под ссылкой проявляется пунктир тропы и бежит, пока курсор на ней. Активный раздел подчёркнут постоянно. <strong>На лендинге:</strong> меню в шапке, контакты. Класс <code>.trail-link</code>.</p>
+      </div>
+
+      <div class="ds-rules">
+        <div class="ds-rule do"><h4><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.2 4L19 7"/></svg>Так</h4><ul><li>Одна подпись на одно действие: «Обсудить ваш проект» для общей формы, «Заявка на …» для брендов.</li><li>Подпись в одну строку, 1-3 слова.</li><li>Карточки моделей не кликабельны, заявку открывает отдельная кнопка.</li></ul></div>
+        <div class="ds-rule dont"><h4><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>Нельзя</h4><ul><li>Стрелки, иконки «→» и «узнать больше».</li><li>Две основные кнопки рядом.</li><li>Убирать обводку фокуса.</li></ul></div>
+      </div>
+    </section>
+
+    <!-- ===== 07 Формы ===== -->
+    <section class="ds-chapter" id="forms" aria-labelledby="forms-title">
+      <div class="ds-head">
+        <h2 class="index-title" id="forms-title"><span class="index">07.</span> Формы</h2>
+        <p class="ds-intro">Подпись над полем, сообщение под формой, обязательные поля со звёздочкой, телефон с маской +7. Имена полей и порядок совпадают с контрактом формы, поэтому оформление можно менять, не трогая логику отправки.</p>
+      </div>
+      <div class="blocks-pair">
+        <form class="contact-form" id="ds-form" novalidate>
+          <h3>Обсудить ваш проект</h3>
+          <div class="form-fields">
+            <label>Имя <span class="required-mark" aria-hidden="true">*</span><input name="name" autocomplete="name" required maxlength="100"></label>
+            <label>Телефон <span class="required-mark" aria-hidden="true">*</span><input name="phone" type="tel" autocomplete="tel" inputmode="tel" placeholder="+7 (___) ___-__-__" required maxlength="30"></label>
+            <fieldset class="product-field"><legend>Что вас интересует <span class="required-mark" aria-hidden="true">*</span></legend><div class="interest-grid"><label class="interest-option"><input type="checkbox" name="interests" value="DrinkX"><span>DrinkX</span></label><label class="interest-option"><input type="checkbox" name="interests" value="Wendougee"><span>Wendougee</span></label><label class="interest-option"><input type="checkbox" name="interests" value="LinkBar"><span>LinkBar</span></label><label class="interest-option"><input type="checkbox" name="interests" value="Кофе и СТМ"><span>Кофе и СТМ</span></label><label class="interest-option"><input type="checkbox" name="interests" value="XLVI / Ceado"><span>XLVI / Ceado</span></label><label class="interest-option"><input type="checkbox" name="interests" value="Водоподготовка"><span>Водо&shy;подготовка</span></label><label class="interest-option"><input type="checkbox" name="interests" value="Комплектация"><span>Комплектация</span></label><label class="interest-option"><input type="checkbox" name="interests" value="Помогите определиться" checked><span>Помогите определиться</span></label></div></fieldset>
+            <label class="comment-field"><span class="comment-label">Что вы планируете открыть или изменить?</span><textarea name="comment" rows="3" maxlength="1000" placeholder="Расскажите о формате проекта, городе и том, что хотите запустить или обновить"></textarea></label>
+          </div>
+          <label class="consent"><input name="consent" type="checkbox" required><span>Согласен на обработку персональных данных&nbsp;<span class="required-mark" aria-hidden="true">*</span></span></label>
+          <button class="cta form-submit" type="submit" data-spotlight>Отправить заявку</button>
+          <p class="form-status" role="status" aria-live="polite"></p>
+        </form>
+        <div class="form-side">
+          <div class="ds-block">
+            <h3 class="h4">Ошибка</h3>
+            <div class="contact-form ds-error-demo">
+              <div class="form-fields"><label>Телефон <span class="required-mark" aria-hidden="true">*</span><input type="tel" value="+7 (909) 422" aria-invalid="true" readonly></label></div>
+              <p class="form-status">Введите номер полностью: 10 цифр после +7.</p>
+            </div>
+          </div>
+          <div class="ds-rule do"><h4><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.2 4L19 7"/></svg>Правила формы</h4><ul><li>«Помогите определиться» снимает конкретные направления, а выбор направления снимает его.</li><li>В форме бренда выбор направления скрыт, вопрос относится к бренду.</li><li>Успех показываем только после ответа сервера. Пока отправки нет, форма честно об этом говорит.</li><li>Галочка рисуется слева направо, поле в фокусе получает мягкое зелёное кольцо. Сообщение об ошибке краснеет, пока есть неверные поля.</li></ul></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 08 Блоки ===== -->
+    <section class="ds-chapter" id="blocks" aria-labelledby="blocks-title">
+      <div class="ds-head">
+        <h2 class="index-title" id="blocks-title"><span class="index">08.</span> Блоки лендинга</h2>
+        <p class="ds-intro">Так компоненты собираются в разделы сайта. Название бренда главное, товар стоит без рамок, линейка моделей идёт компактными карточками.</p>
+      </div>
+
+      <div class="ds-block">
+        <h3 class="ds-sub">Раздел бренда</h3>
+        <article class="spread product-section section-drinkx" data-reveal>
+          <div class="editorial-grid">
+            <header class="section-heading"><h2>DrinkX</h2><p class="section-subtitle">Кофейные станции без бариста</p></header>
+            <figure class="product-visual topo" data-topo-lit><img src="/assets/products/drinkx-user-station.webp" width="991" height="1331" alt="Кофейная станция DrinkX: стойка с подсветкой, кран и экран заказа" draggable="false"></figure>
+            <div class="product-copy">
+              <p class="section-summary">Кофейная точка, где гость выбирает напиток на экране, а станция готовит его без участия бариста.</p>
+              <div class="section-details">
+                <ul class="product-facts">
+                  <li><strong>Станции S100 / S400</strong>Для офиса, магазина, АЗС или отдельного кофе-пойнта.</li>
+                  <li><strong>Под вашу площадку и меню</strong>Модули скрыты под стойкой. Можно добавить несколько видов молока, сиропы, холодильник и отдельный корпус.</li>
+                </ul>
+                <button class="product-cta" type="button" data-spotlight>Заявка на DrinkX</button>
+              </div>
+            </div>
+            <div class="lineup"><div class="models">
+              <article class="model" data-spotlight><div class="model-picture"><img src="/assets/products/drinkx-aeromilk-catalog.webp" width="1400" height="1400" alt="AEROMILK"></div><div class="model-caption"><h3>AEROMILK</h3><p>Молоко и пена</p></div></article>
+              <article class="model" data-spotlight><div class="model-picture"><img src="/assets/products/drinkx-ultrabrewer-catalog.webp" width="1400" height="1400" alt="ULTRABREWER"></div><div class="model-caption"><h3>ULTRABREWER</h3><p>Кофе и чай</p></div></article>
+              <article class="model" data-spotlight><div class="model-picture"><img src="/assets/products/drinkx-flow-x-catalog.webp" width="1400" height="1400" alt="FLOW-X"></div><div class="model-caption"><h3>FLOW-X</h3><p>Нагрев воды</p></div></article>
+            </div></div>
+          </div>
+        </article>
+        <p class="ds-note"><strong>Из чего собран раздел.</strong> Название бренда и зелёная строка под ним: что бренд делает. Сцена: арка из палитры брендбука со светлой картой внутри, она тянется на высоту текста, поэтому нет пустых полей. На сцене только товар, без подписей. Пункты отмечены точками маршрута. Колонка текста шириной с текст, до 42rem. Под курсором товар чуть приближается: масштаб 1,06 от нижней точки, тень глубже. У карточек моделей поднимается только картинка, сама карточка и подпись стоят на месте; под курсором теплится свет. На телефоне и с режимом «меньше движения» всё статично.</p>
+      </div>
+
+      <div class="ds-block">
+          <h3 class="ds-sub">Открытый раздел со списком</h3>
+          <div class="equipment-layout">
+            <header class="equipment-heading"><h2>Подбор и комплектация оборудования для общепита</h2><p>Индивидуально подбираем оборудование под заказ.</p><div class="equipment-action"><button class="product-cta" type="button" data-spotlight>Подбор и комплектация</button></div></header>
+            <ul class="equipment-list" data-cascade aria-label="Что подбираем"><li style="--i:0"><span>Столы</span></li><li style="--i:1"><span>Льдогенераторы</span></li><li style="--i:2"><span>Кондитерские витрины</span></li><li style="--i:3"><span>И другие позиции</span></li></ul>
+          </div>
+          <p class="ds-note"><strong>На лендинге:</strong> раздел «Комплектация». Стоит прямо на фоне страницы, без плашки и карточек. Позиции списка поднимаются по очереди, линии под ними прорисовываются слева направо. Под курсором строка зеленеет и сдвигается вправо. Атрибут <code>data-cascade</code>, задержки через <code>--i</code>.</p>
+      </div>
+
+      <div class="ds-block">
+          <h3 class="ds-sub">Фото под стираемым слоем</h3>
+          <div class="founder-head ds-founder"><figure class="founder-photo" data-scratch><img src="/assets/team/dmitry-onishchuk.jpg" alt="Дмитрий Онищук" width="427" height="640" loading="lazy" decoding="async" draggable="false"></figure><div class="founder-id"><p class="person">Дмитрий Онищук</p><p class="founder-role">Основатель DAO COFFEE GROUP</p></div></div>
+          <p class="ds-note"><strong>На лендинге:</strong> фото основателя. Поверх фото зелёный слой с картой и подсказкой, его стирают мышью с зажатой кнопкой, пером или пальцем. Когда стёрта половина, слой растворяется. С клавиатуры слой убирает кнопка «Показать фото». Без скриптов фото просто видно. Атрибут <code>data-scratch</code>.</p>
+      </div>
+
+      <div class="blocks-pair">
+        <div class="ds-block">
+          <h3 class="ds-sub">Контакты</h3>
+          <div class="ds-surface surface-sage ds-block">
+            <p class="h4">Дмитрий Онищук</p>
+            <address class="contact-demo" style="font-style:normal">
+              <a class="contact-channel" href="https://t.me/Dmitriy_DAO_Coffee" target="_blank" rel="noopener noreferrer"><span class="contact-label">Telegram</span><span class="contact-value trail-link">@Dmitriy_DAO_Coffee</span></a>
+              <a class="contact-channel" href="tel:+79094224565"><span class="contact-label">Мобильный</span><span class="contact-value trail-link">+7 (909) 422-45-65</span></a>
+              <a class="contact-channel" href="tel:+79289084565"><span class="contact-label">Сервисная служба</span><span class="contact-value trail-link">+7 (928) 908-45-65</span></a>
+              <a class="contact-channel" href="mailto:Dvdaogroup@yandex.ru"><span class="contact-label">Email</span><span class="contact-value trail-link">Dvdaogroup@yandex.ru</span></a>
+            </address>
+          </div>
+          <p class="ds-note">Ссылка контакта подчёркивается тропой при наведении на всю строку.</p>
+        </div>
+        <div class="ds-block">
+        <h3 class="ds-sub">Зелёная плашка</h3>
+        <div class="plate ds-plate topo topo-green topo-trail" data-topo-lit>
+          <h2 class="h3">Обсудить ваш проект</h2>
+          <p class="text">Подбираем и поставляем оборудование разных брендов для кофеен, офисов и сетей.</p>
+          <button class="cta-light" type="button" data-spotlight>Обсудить ваш проект</button>
+        </div>
+        <p class="ds-note">Небольшая вставка внутри светлого раздела. Во всю ширину страницы не растягиваем, чтобы фон лендинга оставался светлым.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 09 Иконки ===== -->
+    <section class="ds-chapter" id="icons" aria-labelledby="icons-title">
+      <div class="ds-head">
+        <h2 class="index-title" id="icons-title"><span class="index">09.</span> Иконки</h2>
+        <p class="ds-intro">Символы взяты из раздела «Перспективы»: компас, флаг на вершине, костёр, метка с зерном, знак с чашкой, вершины и маршрут. Стиль по описанию брендбука: линейный, технический, с закруглёнными концами. В зелёном круге они выглядят как фирменные значки.</p>
+      </div>
+      <div class="icon-set">
+        <figure class="icon-item" data-icon><span class="icon-badge"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v1.6M12 18.9v1.6M3.5 12h1.6M18.9 12h1.6"/><path class="i-needle" d="M15 9l-2 4-4 2 2-4z"/></svg></span><figcaption><p>Компас</p></figcaption></figure>
+        <figure class="icon-item" data-icon><span class="icon-badge"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.8 20 9 10.5l3.2 4.8 2.3-3.2L21.2 20z"/><path d="M9 10.5V3.6"/><path class="i-flag" d="M9 3.9h4.8l-1.2 1.6 1.2 1.6H9"/></svg></span><figcaption><p>Флаг на вершине</p></figcaption></figure>
+        <figure class="icon-item" data-icon><span class="icon-badge"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 20.5l15-3.7M4.5 16.8l15 3.7"/><path class="i-flame" d="M12 15.6c-2.2 0-3.6-1.4-3.6-3.3 0-2.4 2.1-3.6 2.6-6.6 1.9 1.3 4.6 3.8 4.6 6.6 0 1.9-1.4 3.3-3.6 3.3z"/><path class="i-flame-in" d="M12 15.6c-.9 0-1.4-.6-1.4-1.3 0-1 .7-1.6 1.1-2.6.8.6 1.7 1.5 1.7 2.6 0 .7-.5 1.3-1.4 1.3z"/></svg></span><figcaption><p>Костёр</p></figcaption></figure>
+        <figure class="icon-item" data-icon><span class="icon-badge"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><g class="i-pin"><path d="M12 21.3s-6.6-6-6.6-11.1a6.6 6.6 0 0 1 13.2 0c0 5.1-6.6 11.1-6.6 11.1z"/><ellipse cx="12" cy="10.2" rx="2.2" ry="3" transform="rotate(28 12 10.2)"/><path d="M13 7.7c-1.3 1.1-.4 3.7-2 5"/></g></svg></span><figcaption><p>Метка с зерном</p></figcaption></figure>
+        <figure class="icon-item" data-icon><span class="icon-badge"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6 21.4 12 12 21.4 2.6 12z"/><path d="M8.7 11.3h5.4v1.5a2.7 2.7 0 0 1-5.4 0z"/><path d="M14.1 11.8h.6a1.05 1.05 0 0 1 0 2.1h-.8"/><path class="i-steam" d="M10.4 7.8c-.5.6.5 1.1 0 1.7M12.4 7.8c-.5.6.5 1.1 0 1.7"/></svg></span><figcaption><p>Знак с чашкой</p></figcaption></figure>
+        <figure class="icon-item" data-icon><span class="icon-badge"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle class="i-sun" cx="17.2" cy="6.6" r="2"/><path d="M2.6 20 9.3 9.2l4 6.2 2.6-3.6 5.5 8.2z"/><path d="M7.4 12.2l1.9 1.3 1.6-1.4"/></svg></span><figcaption><p>Вершины</p></figcaption></figure>
+        <figure class="icon-item" data-icon><span class="icon-badge"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5.2" cy="18.6" r="1.8"/><path class="i-route" d="M6.8 17.7c3.4-1.5 1.4-5.3 5.2-6.3 2.8-.7 4.4-1.7 5-4.2" stroke-dasharray="2.2 2.2"/><path d="M17 7.6V2.9l3.4 1.4L17 5.7"/></svg></span><figcaption><p>Маршрут</p></figcaption></figure>
+      </div>
+      <p class="ds-note">Наведите курсор: стрелка компаса качнётся, флаг затрепещет, огонь задрожит, над чашкой пойдёт пар, солнце поднимется над вершиной, маршрут побежит.</p>
+      <div class="icon-line" aria-label="Иконки в линейном виде">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v1.6M12 18.9v1.6M3.5 12h1.6M18.9 12h1.6"/><path d="M15 9l-2 4-4 2 2-4z"/></svg>
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.8 20 9 10.5l3.2 4.8 2.3-3.2L21.2 20z"/><path d="M9 10.5V3.6"/><path d="M9 3.9h4.8l-1.2 1.6 1.2 1.6H9"/></svg>
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 20.5l15-3.7M4.5 16.8l15 3.7"/><path d="M12 15.6c-2.2 0-3.6-1.4-3.6-3.3 0-2.4 2.1-3.6 2.6-6.6 1.9 1.3 4.6 3.8 4.6 6.6 0 1.9-1.4 3.3-3.6 3.3z"/></svg>
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.3s-6.6-6-6.6-11.1a6.6 6.6 0 0 1 13.2 0c0 5.1-6.6 11.1-6.6 11.1z"/><ellipse cx="12" cy="10.2" rx="2.2" ry="3" transform="rotate(28 12 10.2)"/><path d="M13 7.7c-1.3 1.1-.4 3.7-2 5"/></svg>
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6 21.4 12 12 21.4 2.6 12z"/><path d="M8.7 11.3h5.4v1.5a2.7 2.7 0 0 1-5.4 0z"/><path d="M14.1 11.8h.6a1.05 1.05 0 0 1 0 2.1h-.8"/></svg>
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="17.2" cy="6.6" r="2"/><path d="M2.6 20 9.3 9.2l4 6.2 2.6-3.6 5.5 8.2z"/></svg>
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5.2" cy="18.6" r="1.8"/><path d="M6.8 17.7c3.4-1.5 1.4-5.3 5.2-6.3 2.8-.7 4.4-1.7 5-4.2" stroke-dasharray="2.2 2.2"/><path d="M17 7.6V2.9l3.4 1.4L17 5.7"/></svg>
+      </div>
+      <p class="ds-note">Сетка 24 px, линия 1,5 px, концы и углы скруглены. В брендбуке иконографика отмечена как «не вошедшая в разработку», поэтому набор показан как предложение: на лендинг ставим только после согласования.</p>
+    </section>
+
+    <!-- ===== 10 Движение ===== -->
+    <section class="ds-chapter" id="motion" aria-labelledby="motion-title">
+      <div class="ds-head">
+        <h2 class="index-title" id="motion-title"><span class="index">10.</span> Движение</h2>
+        <p class="ds-intro">Движение на сайте маленькое и объяснимое: подтверждает действие, показывает, что элемент живой, или ведёт взгляд. Анимируются только сдвиг, масштаб и прозрачность. Без видео, 3D, перехвата прокрутки, закрепления и прилипания разделов.</p>
+      </div>
+      <div class="ease-demo" tabindex="0" aria-label="Демонстрация фирменной кривой ускорения, наведите курсор">
+        <div class="ease-track"><span class="ease-dot"></span></div>
+        <div class="ease-tokens"><span><code>--ease</code> cubic-bezier(.22, 1, .36, 1)</span><span><code>--duration-quick</code> 150 ms</span><span><code>--duration-fast</code> 250 ms</span><span><code>--duration-medium</code> 350 ms</span><span><code>--duration-slow</code> 600 ms</span></div>
+      </div>
+      <p class="ds-note">Наведите курсор на дорожку: точка проходит путь с фирменной кривой, быстро трогается и мягко прибывает.</p>
+
+      <ol class="motion-list">
+        <li class="motion-item"><span class="num">1</span><h3>Карта под фонариком</h3><p><strong>Где:</strong> паттерн первого экрана и плашек.</p><p>Вокруг курсора линии проявляются ярче в радиусе 260 px. Атрибут <code>data-topo-lit</code>.</p></li>
+        <li class="motion-item"><span class="num">2</span><h3>Свет под курсором</h3><p><strong>Где:</strong> кнопки и карточки моделей.</p><p>Внутри элемента теплится мягкое пятно света: кремовое на зелёном, бежевое на светлом. Атрибут <code>data-spotlight</code>.</p></li>
+        <li class="motion-item"><span class="num">3</span><h3>Бегущий пунктир</h3><p><strong>Где:</strong> ссылки меню, контакты, разделители.</p><p>Пунктир тропы проявляется и идёт вперёд, пока курсор на ссылке.</p></li>
+        <li class="motion-item"><span class="num">4</span><h3>Тропа рисуется</h3><p><strong>Где:</strong> разделители в документах; на лендинге не используется.</p><p>Один раз при появлении на экране линия прорисовывается слева направо за 1,6 с.</p></li>
+        <li class="motion-item"><span class="num">5</span><h3>Подъём картинки</h3><p><strong>Где:</strong> карточки моделей.</p><p>Картинка поднимается на 5 px, тень под ней становится мягче. Карточка и подпись на месте.</p></li>
+        <li class="motion-item"><span class="num">6</span><h3>Товар приближается</h3><p><strong>Где:</strong> оборудование на первом экране и в разделах.</p><p>Масштаб 1,06 от нижней точки за 600 ms, тень становится глубже. XLVI и Ceado приближаются по отдельности.</p></li>
+        <li class="motion-item"><span class="num">7</span><h3>Нажатие</h3><p><strong>Где:</strong> все кнопки.</p><p>Масштаб 0,97 за 150 ms, затем мягкий возврат. Подтверждает, что нажатие принято.</p></li>
+        <li class="motion-item"><span class="num">8</span><h3>Галочка рисуется</h3><p><strong>Где:</strong> выбор направлений, согласие.</p><p>Отметка прорисовывается слева направо за 350 ms.</p></li>
+        <li class="motion-item"><span class="num">9</span><h3>Живые значки</h3><p><strong>Где:</strong> иконки, если их согласуют.</p><p>У каждого значка своё маленькое движение при наведении: стрелка, флаг, огонь, пар, солнце, маршрут.</p></li>
+        <li class="motion-item"><span class="num">10</span><h3>Появление блока</h3><p><strong>Где:</strong> заголовки, товары, тексты.</p><p>Блок поднимается на 16 px и набирает полную яркость. До этого он уже виден, просто чуть прозрачнее.</p></li>
+        <li class="motion-item"><span class="num">11</span><h3>Пачки расходятся</h3><p><strong>Где:</strong> раздел DAO COFFEE.</p><p>Боковые пачки отходят в стороны и чуть сильнее наклоняются, все три приближаются на 5%.</p></li>
+        <li class="motion-item"><span class="num">12</span><h3>Список по очереди</h3><p><strong>Где:</strong> раздел «Комплектация».</p><p>Строки поднимаются из-под линии с шагом 140 ms, линии прорисовываются следом. Атрибут <code>data-cascade</code>.</p></li>
+        <li class="motion-item"><span class="num">13</span><h3>Стираемый слой</h3><p><strong>Где:</strong> фото основателя.</p><p>Слой стирается кистью под курсором или пальцем и растворяется за 700 ms, когда стёрта половина. Атрибут <code>data-scratch</code>.</p></li>
+      </ol>
+
+      <div class="ds-rules">
+        <div class="ds-rule do"><h4><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.2 4L19 7"/></svg>Так</h4><ul><li>Одно движение на элемент.</li><li>Эффекты наведения только для мыши: на телефоне их нет.</li><li>С режимом «меньше движения» всё статично, страница при этом полная.</li></ul></div>
+        <div class="ds-rule dont"><h4><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>Нельзя</h4><ul><li>Анимировать логотип.</li><li>Бесконечные анимации без наведения.</li><li>Перехватывать колесо, закреплять разделы, включать плавную прокрутку.</li></ul></div>
+      </div>
+    </section>
+
+    <!-- ===== 11 Фото и голос ===== -->
+    <section class="ds-chapter" id="voice" aria-labelledby="voice-title">
+      <div class="ds-head">
+        <h2 class="index-title" id="voice-title"><span class="index">11.</span> Фото и голос</h2>
+        <p class="ds-intro">Брендбук просит мягкую цветовую обработку, близкую к оттенкам кофейных напитков и фирменной палитре. На сайте это два типа снимков: реальное оборудование без фона и люди компании.</p>
+      </div>
+      <div class="photo-pair">
+        <figure><div class="frame surface-sand"><img class="cutout" src="/assets/products/coffee-clean-v11.webp" width="1086" height="1448" alt="Фирменная упаковка кофе ДАО"></div><figcaption class="ds-note"><strong>Товар.</strong> Реальный снимок, вырезан от фона, мягкая тень по силуэту. Размеры соседних товаров сверяем с учётом прозрачных полей.</figcaption></figure>
+        <figure><div class="frame"><img class="portrait" src="/assets/team/dmitry-onishchuk.jpg" width="427" height="640" alt="Дмитрий Онищук"></div><figcaption class="ds-note"><strong>Люди.</strong> Естественный свет, светлая одежда, открытый взгляд. Как в образе бренда: в белой рубашке, но готов закатать рукава.</figcaption></figure>
+      </div>
+      <div class="ds-block">
+        <h3 class="ds-sub">Характер</h3>
+        <div class="traits"><span>Дружелюбный</span><span>Открытый</span><span>С экспертизой</span><span>Надёжный</span><span>Светлый</span><span>Командный игрок</span></div>
+      </div>
+      <div class="ds-block">
+        <h3 class="ds-sub">Как пишем</h3>
+        <div class="voice-pairs">
+          <div class="voice-pair"><p class="yes">Подберём машину и кофемолку под меню и нагрузку кофейни.</p><p class="no">Лучшие кофемашины по лучшим ценам!</p></div>
+          <div class="voice-pair"><p class="yes">Обсудим возможность интеграции оборудования с вашей системой учёта.</p><p class="no">Интегрируем с любой учётной системой.</p></div>
+          <div class="voice-pair"><p class="yes">Заявка на DrinkX</p><p class="no">Узнать больше</p></div>
+        </div>
+        <p class="ds-note">Слева так, как пишем; справа так, как не пишем. Обращаемся на «вы», говорим конкретно, не обещаем цены, наличие и гарантии, которых нет в договорённостях, не называем себя производителем чужих брендов.</p>
+      </div>
+
+      <div class="ds-closing topo topo-cream" data-topo-lit>
+        <blockquote>Люди самое ценное, а кофе один из лучших продуктов для их объединения!</blockquote>
+        <img src="/assets/dao-logo-stacked.svg" width="339" height="188" alt="DAO COFFEE GROUP, вместе к новым вершинам">
+      </div>
+    </section>
+
+    <footer class="ds-footer">Основа: «Руководство по использованию фирменного стиля ДАО Кофе групп» и договорённости по сайту в AGENTS.md. Страница для команды сайта, поисковым системам закрыта.</footer>
+  </main>
+</div>
+<p class="toast" id="toast" role="status" aria-live="polite"></p>
+</body>
+</html>

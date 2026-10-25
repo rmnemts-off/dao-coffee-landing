@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "node scripts/serve.mjs",
     "start": "node scripts/serve.mjs",
-    "check": "node --check site/scripts/main.js && node --check site/scripts/forms.js && node --check scripts/serve.mjs"
+    "check": "node --check site/scripts/main.js && node --check site/scripts/effects.js && node --check site/scripts/forms.js && node --check site/design-system/docs.js && node --check scripts/serve.mjs"
   },
   "engines": {
     "node": ">=22"
