@@ -39,6 +39,9 @@ export function openLeadStore(filename = ':memory:', { maxOutstanding = 1000 } =
     CREATE TABLE IF NOT EXISTS delivery_lock (
       singleton INTEGER PRIMARY KEY CHECK(singleton=1), owner TEXT NOT NULL, expires_at INTEGER NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS upstream_cooldown (
+      singleton INTEGER PRIMARY KEY CHECK(singleton=1), blocked_until INTEGER NOT NULL
+    );
     CREATE INDEX IF NOT EXISTS submissions_state ON submissions(state, updated_at);
     PRAGMA user_version=1;`);
   const get = id => safeRow(db.prepare('SELECT * FROM submissions WHERE request_id=?').get(id));
@@ -67,6 +70,8 @@ export function openLeadStore(filename = ':memory:', { maxOutstanding = 1000 } =
         const current = get(id);
         const allowed = operation === 'send' ? ['received', 'rejected', 'unconfigured'] : ['processing', 'uncertain'];
         if (!current || !allowed.includes(current.state) || current.retry_at > now) return { current };
+        const cooldown = db.prepare('SELECT blocked_until FROM upstream_cooldown WHERE singleton=1').get();
+        if (cooldown?.blocked_until > now) return { current, blockedUntil: cooldown.blocked_until };
         const lock = db.prepare('SELECT * FROM delivery_lock WHERE singleton=1').get();
         if (lock && lock.expires_at > now) return null;
         const owner = randomUUID();
@@ -79,11 +84,19 @@ export function openLeadStore(filename = ':memory:', { maxOutstanding = 1000 } =
     finish(id, claim, result, now) {
       let kind = ['delivered', 'rejected', 'unconfigured'].includes(result?.kind) ? result.kind : 'uncertain';
       if (kind === 'delivered' && (!positiveId(result.crmId) || ![1, 2].includes(result.entityTypeId))) kind = 'uncertain';
+      const retryAt = now + Math.max(5, Math.min(3600, result?.retryAfter || 5)) * 1000;
+      if (kind === 'rejected') {
+        // A portal refusal affects every key and worker, including after restart.
+        // Commit it independently: a late worker may have lost its delivery lease,
+        // but its refusal must not be discarded or shorten a newer, longer pause.
+        db.prepare(`INSERT INTO upstream_cooldown(singleton,blocked_until) VALUES(1,?)
+          ON CONFLICT(singleton) DO UPDATE SET blocked_until=MAX(blocked_until,excluded.blocked_until)`).run(retryAt);
+      }
       transaction(() => {
         const lock = db.prepare('SELECT owner FROM delivery_lock WHERE singleton=1').get();
         if (lock?.owner !== claim.owner) throw new Error('Delivery lease expired');
         db.prepare(`UPDATE submissions SET state=?,updated_at=?,retry_at=?,crm_id=?,entity_type_id=?,contact_id=? WHERE request_id=?`)
-          .run(kind, now, now + Math.max(5, Math.min(3600, result?.retryAfter || 5)) * 1000,
+          .run(kind, now, retryAt,
             result?.crmId ?? null, result?.entityTypeId ?? null, result?.contactId ?? null, id);
         db.prepare('UPDATE delivery_attempts SET finished_at=?,outcome=? WHERE id=?').run(now, kind, claim.attempt);
         db.prepare('DELETE FROM delivery_lock WHERE owner=?').run(claim.owner);

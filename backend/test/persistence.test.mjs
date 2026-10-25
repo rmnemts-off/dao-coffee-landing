@@ -113,6 +113,81 @@ test('known rejection permits explicit retry with the original request ID only a
   assert.equal(ids.length, 2); assert.equal(ids[0], ids[1]);
 });
 
+test('upstream cooldown blocks a new key after reopening the shared journal', async t => {
+  const filename = journal(t); let time = 0, sends = 0;
+  let store = openLeadStore(filename);
+  const first = createPersistentLeadService({ store, now: () => time, send: async () => {
+    sends++; return { kind: 'rejected', retryAfter: 60 };
+  } });
+  assert.equal((await first.submit(valid(), randomUUID())).body.code, 'DELIVERY_FAILED');
+  store.close();
+  store = openLeadStore(filename); t.after(() => store.close());
+  const next = createPersistentLeadService({ store, now: () => time, send: async () => { sends++; return delivered; } });
+  const key = randomUUID(), body = valid({ comment: 'A different inquiry' });
+  time = 1000;
+  assert.equal((await next.submit(body, key)).body.code, 'DELIVERY_UNAVAILABLE');
+  assert.equal(sends, 1);
+  assert.equal(store.list().filter(row => row.state === 'received').length, 1);
+  time = 60_000;
+  assert.equal((await next.submit(body, key)).status, 200);
+  assert.equal(sends, 2);
+});
+
+test('a late short refusal cannot shorten a concurrent worker longer cooldown after lease takeover', async t => {
+  const filename = journal(t), a = openLeadStore(filename), b = openLeadStore(filename);
+  t.after(() => { a.close(); b.close(); });
+  let time = 0, finishSlow, finishNew, extraSends = 0;
+  const slow = createPersistentLeadService({ store: a, now: () => time,
+    send: () => new Promise(resolve => { finishSlow = resolve; }) });
+  const newer = createPersistentLeadService({ store: b, now: () => time,
+    send: () => new Promise(resolve => { finishNew = resolve; }) });
+  const first = slow.submit(valid({ comment: 'Slow worker' }), randomUUID());
+  await Promise.resolve();
+  // Simulate a suspended worker: its lease expires before its remote response.
+  time = 61_000;
+  const second = newer.submit(valid({ comment: 'New lease owner' }), randomUUID());
+  await Promise.resolve();
+  finishNew({ kind: 'rejected', retryAfter: 60 });
+  assert.equal((await second).body.code, 'DELIVERY_FAILED');
+  time = 62_000;
+  finishSlow({ kind: 'rejected', retryAfter: 5 });
+  assert.equal((await first).body.code, 'DELIVERY_UNCERTAIN');
+  const next = createPersistentLeadService({ store: a, now: () => time,
+    send: async () => { extraSends++; return delivered; } });
+  const key = randomUUID(), body = valid({ comment: 'Third inquiry' });
+  time = 68_000;
+  assert.equal((await next.submit(body, key)).body.code, 'DELIVERY_UNAVAILABLE');
+  assert.equal(extraSends, 0);
+  time = 121_000;
+  assert.equal((await next.submit(body, key)).status, 200);
+  assert.equal(extraSends, 1);
+});
+
+test('a journal commit failure after CRM success stays uncertain and recovers without another send', async t => {
+  const store = openLeadStore(); t.after(() => store.close());
+  let time = 0, writes = 0, reads = 0, failCommit = true;
+  const events = [];
+  const service = createPersistentLeadService({ now: () => time, onDelivery: event => events.push(event),
+    store: { ...store, finish: (...args) => {
+      if (failCommit) { failCommit = false; throw new Error('Simulated private database I/O failure'); }
+      return store.finish(...args);
+    } },
+    send: async () => { writes++; return delivered; }, reconcile: async () => { reads++; return delivered; } });
+  const key = randomUUID();
+  const response = await service.submit(valid(), key);
+  assert.equal(response.status, 502); assert.equal(response.body.code, 'DELIVERY_UNCERTAIN');
+  const row = store.list()[0];
+  assert.equal(row.state, 'processing');
+  assert.deepEqual(events, [{ requestId: row.request_id, outcome: 'uncertain', durationMs: 0 }]);
+  assert.equal(JSON.stringify(response).includes('private'), false);
+  assert.equal((await service.submit(valid(), key)).body.code, 'DELIVERY_PENDING');
+  time = 61_000;
+  const recovered = await service.submit(valid(), key);
+  assert.equal(recovered.status, 200); assert.equal(recovered.body.requestId, row.request_id);
+  assert.equal(writes, 1); assert.equal(reads, 1);
+  assert.equal(store.get(row.request_id).crm_id, delivered.crmId);
+});
+
 test('invalid body/key never creates an attempt; public directory cannot host a journal', async t => {
   const store = openLeadStore(); t.after(() => store.close());
   let calls = 0;

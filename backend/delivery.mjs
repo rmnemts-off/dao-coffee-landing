@@ -28,6 +28,7 @@ export function createPersistentLeadService({ store, send, reconcile, now = Date
     if (operation === 'reconcile' && typeof reconcile !== 'function') return failure(502, 'DELIVERY_UNCERTAIN');
     const claim = store.claim(row.request_id, operation, time);
     if (!claim) return failure(503, 'DELIVERY_PENDING');
+    if (claim.blockedUntil > time) return failure(503, operation === 'reconcile' ? 'DELIVERY_UNCERTAIN' : 'DELIVERY_UNAVAILABLE');
     if (Object.hasOwn(claim, 'current')) return claim.current?.state === 'delivered'
       ? success(claim.current) : failure(503, claim.current?.state === 'uncertain' ? 'DELIVERY_UNCERTAIN' : 'DELIVERY_PENDING');
     budget.count++;
@@ -38,7 +39,13 @@ export function createPersistentLeadService({ store, send, reconcile, now = Date
       } catch { result = { kind: 'uncertain' }; }
       // Reconciliation errors/empty results must NEVER turn an unknown write into a retryable add.
       if (operation === 'reconcile' && result?.kind !== 'delivered') result = { kind: 'uncertain' };
-      const finished = store.finish(row.request_id, claim, result, now());
+      let finished;
+      try { finished = store.finish(row.request_id, claim, result, now()); }
+      catch {
+        // The CRM call has happened. A failed local commit (or lost lease) is
+        // not proof of remote failure; preserve the journal for reconciliation.
+        finished = { state: 'uncertain' };
+      }
       try { Promise.resolve(onDelivery?.({ requestId: row.request_id, outcome: finished.state, durationMs: Math.max(0, now() - time) })).catch(() => {}); } catch {}
       if (finished.state === 'delivered') return success(finished);
       return failure(finished.state === 'unconfigured' ? 503 : 502,
