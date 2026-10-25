@@ -1,3 +1,6 @@
+import { mkdtempSync, rmSync } from 'node:fs';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import http from 'node:http';
@@ -111,8 +114,10 @@ test('invalid traffic from separate clients does not exhaust the global delivery
 });
 
 test('readiness checks only local configuration and draining, without a Bitrix request', async t => {
-  const configured = { NODE_ENV: 'production', APP_ORIGIN: 'https://dao.example', BITRIX_WEBHOOK_URL: 'https://crm.example/rest/1/mock-secret/', BITRIX_ENTITY_TYPE_ID: '1', BITRIX_ASSIGNED_BY_ID: '1', BITRIX_STAGE_ID: 'NEW' };
-  for (const env of [{}, { ...configured, BITRIX_WEBHOOK_URL: 'invalid' }, { ...configured, APP_ORIGIN: '' }, { ...configured, APP_ORIGIN: 'http://dao.example' }, configured]) {
+  const dir = mkdtempSync(join(tmpdir(), 'dao-ready-'));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const configured = { NODE_ENV: 'production', APP_ORIGIN: 'https://dao.example', BITRIX_WEBHOOK_URL: 'https://crm.example/rest/1/mock-secret/', BITRIX_ENTITY_TYPE_ID: '1', BITRIX_ASSIGNED_BY_ID: '1', BITRIX_STAGE_ID: 'NEW', BITRIX_SOURCE_ID: 'STORE', LEADS_DB_PATH: join(dir, 'leads.sqlite') };
+  for (const env of [{}, { ...configured, LEADS_DB_PATH: ':memory:' }, { ...configured, LEADS_DB_PATH: '' }, { ...configured, BITRIX_WEBHOOK_URL: 'invalid' }, { ...configured, APP_ORIGIN: '' }, { ...configured, APP_ORIGIN: 'http://dao.example' }, configured]) {
     // No injected sender: only configuration is checked, never CRM creation.
     const { server, origin } = await start(t, { env, send: undefined });
     const ready = await fetch(`${origin}/readyz`);

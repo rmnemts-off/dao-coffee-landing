@@ -56,6 +56,60 @@
   };
   const drafts = new Map();
   const deliveries = new Map();
+  const intents = new Map();
+  const intentStorageKey = 'dao.lead-intents.v1';
+  const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  function storedIntents() {
+    try {
+      const saved = JSON.parse(sessionStorage.getItem(intentStorageKey) || '{}');
+      return saved && typeof saved === 'object' && !Array.isArray(saved) ? saved : {};
+    } catch { return {}; }
+  }
+  function persistIntents(saved) {
+    try {
+      if (Object.keys(saved).length) sessionStorage.setItem(intentStorageKey, JSON.stringify(saved));
+      else sessionStorage.removeItem(intentStorageKey);
+    } catch { /* Private/storage-restricted sessions keep the in-memory identity. */ }
+  }
+  function newIntentKey() {
+    if (typeof crypto.randomUUID === 'function') return crypto.randomUUID();
+    const bytes = crypto.getRandomValues(new Uint8Array(16));
+    bytes[6] = (bytes[6] & 15) | 64;
+    bytes[8] = (bytes[8] & 63) | 128;
+    const hex = [...bytes].map(byte => byte.toString(16).padStart(2, '0')).join('');
+    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+  }
+  async function intentFor(context, payload) {
+    // Inline and general modal are two views of the same submission. Source is
+    // metadata; the normalized data determines whether the visitor changed it.
+    const { source: _source, ...fields } = payload;
+    const identity = JSON.stringify({ ...fields, interests: [...fields.interests].sort(), model: fields.model?.trim() || null });
+    const previous = intents.get(context);
+    if (previous?.identity === identity) return previous;
+    const intent = { identity, key: newIntentKey() };
+    try {
+      const hash = async value => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value)))]
+        .map(byte => byte.toString(16).padStart(2, '0')).join('');
+      const [contextHash, fingerprint] = await Promise.all([hash(context), hash(identity)]);
+      const saved = storedIntents();
+      const record = saved[contextHash];
+      if (record?.fingerprint === fingerprint && uuidPattern.test(record.key)) intent.key = record.key;
+      intent.contextHash = contextHash;
+      // Never persist the draft, phone, name, comment, or an unhashed payload.
+      saved[contextHash] = { fingerprint, key: intent.key };
+      persistIntents(saved);
+    } catch { /* Without Web Crypto hashing, retain the key only in memory. */ }
+    intents.set(context, intent);
+    return intent;
+  }
+  function finishIntent(context, intent) {
+    if (intents.get(context) === intent) intents.delete(context);
+    if (intent.contextHash) {
+      const saved = storedIntents();
+      if (saved[intent.contextHash]?.key === intent.key) delete saved[intent.contextHash];
+      persistIntents(saved);
+    }
+  }
   const lockedFields = new WeakMap();
   const productIds = Object.fromEntries(Object.entries(directions).map(([id, label]) => [label, id]));
   const unknownDelivery = 'Не удалось подтвердить доставку. Заявка могла дойти. Не отправляйте её повторно сразу; свяжитесь с нами по указанным на сайте контактам.';
@@ -347,12 +401,14 @@
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), 20_000);
       try {
+        const intent = await intentFor(context, payload);
         const response = await fetch('/api/leads', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          method: 'POST', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': intent.key },
           credentials: 'same-origin', signal: controller.signal, body: JSON.stringify(payload),
         });
         const result = await response.json();
         if (response.status === 200 && result?.ok === true && typeof result.requestId === 'string' && result.requestId) {
+          finishIntent(context, intent);
           state.state = 'success';
           state.message = 'Заявка отправлена. Мы свяжемся с вами.';
         } else {
@@ -361,6 +417,10 @@
           else if (response.status === 400 && result.code === 'VALIDATION_ERROR') {
             state.message = 'Проверьте отмеченные поля. Заявка не отправлена.';
             state.fieldErrors = result.fieldErrors;
+          } else if (response.status === 409 && result.code === 'IDEMPOTENCY_CONFLICT') {
+            state.message = 'Данные заявки изменились. Проверьте форму и отправьте ещё раз.';
+          } else if (response.status === 503 && result.code === 'DELIVERY_PENDING') {
+            state.message = 'Заявка ещё обрабатывается. Попробуйте проверить результат позже.';
           } else if (response.status === 429) state.message = 'Слишком много попыток. Подождите минуту и попробуйте снова.';
           else if (response.status === 413) state.message = 'Заявка слишком большая. Сократите текст и попробуйте снова.';
           else if (result.code === 'DELIVERY_UNCERTAIN') state.message = unknownDelivery;

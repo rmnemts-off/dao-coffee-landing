@@ -61,3 +61,10 @@
 /site/styles/forms.css
 /site/styles/main.css
 /site/styles/refinement.css
+
+# Private submission journal and SQLite sidecars.
+/backend/data/
+**/*.sqlite
+**/*.sqlite-*
+**/*.db
+**/*.db-*
