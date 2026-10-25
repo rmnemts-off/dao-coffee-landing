@@ -206,7 +206,7 @@ code{font:400 12.5px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(-
 .spread .product-visual img{translate:var(--fx,0) var(--fy,0);transition:translate .55s var(--ease)}
 .spread .editorial-grid{grid-template-columns:minmax(0,.75fr) minmax(0,1.25fr)}
 @media(max-width:960px){.spread .editorial-grid{grid-template-columns:minmax(0,1fr)}}
-.contact-demo{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 24px;max-width:560px}
+.contact-demo{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,15.5rem),1fr));gap:0 24px;max-width:560px}
 .blocks-pair{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
 .ds-plate{display:grid;gap:18px;justify-items:start;padding:clamp(28px,4vw,48px)}
 .ds-plate p{max-width:52ch}
@@ -316,7 +316,7 @@ code{font:400 12.5px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(-
    Not used on the landing yet. Move a rule into site/styles/design.css together
    with the first block that needs it. */
 .topo-gray{--topo-ground:var(--gray)}
-.topo-green{--topo-ground:var(--green);--topo-ink:var(--white);--topo-rest:.3}
+.topo-green{--topo-ground:var(--green);--topo-ink:var(--white);--topo-rest:.3;color:var(--cream)}
 .cta-light{position:relative;isolation:isolate;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:12px 24px;border-radius:var(--radius-pill);background:var(--cream);color:var(--ink);font:400 14px/1.4 var(--body);transition:background-color var(--duration-fast);--spot:var(--glow-warm)}
 .cta-light:hover{background:var(--white)}
 .cta-light:focus-visible{outline-color:var(--cream)}

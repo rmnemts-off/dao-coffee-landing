@@ -193,11 +193,16 @@ a:hover>.trail-link::after,a:focus-visible>.trail-link::after,
 .italian-piece .ceado-grinder{height:clamp(14rem,5.6rem + 20.5vw,31.5rem)}
 .italian-caption{margin-top:clamp(14px,1.2vw,24px);font-size:var(--fs-small);font-weight:400;line-height:1.4;text-align:center}
 
-/* ---------- Equipment brief: the title across the plate, the cream map opens in the free corner ---------- */
+/* ---------- Equipment brief on the full cream map ---------- */
 .equipment-section{position:relative;padding-block:var(--section-pad);background:var(--sand)}
 .plate{border-radius:var(--radius-card)}
+/* Text on a map plate is labelled the way a topographic map labels places:
+   a halo in the plate colour stops the contour lines just short of the letters. */
+.plate.topo :is(h2,h3,p){
+  --halo:var(--topo-ground);
+  text-shadow:0 0 .05em var(--halo),0 0 .1em var(--halo),0 0 .18em var(--halo),0 0 .3em var(--halo),0 0 .45em var(--halo)
+}
 .equipment-layout{
-  --topo-fade:linear-gradient(to top left,#000 0 20%,rgb(0 0 0 / .5) 32%,transparent 45%);--topo-position:right bottom;
   display:grid;grid-template-columns:minmax(0,1fr);justify-items:start;row-gap:clamp(28px,2.6vw,48px);
   padding:clamp(32px,1rem + 4vw,104px)
 }
@@ -221,7 +226,8 @@ a:hover>.trail-link::after,a:focus-visible>.trail-link::after,
 .founder-copy{display:grid;gap:14px;max-width:40rem}
 .founder-description{font:500 var(--fs-lead)/1.38 var(--heading);text-wrap:pretty}
 .founder-partnership{font-size:var(--fs-body);line-height:1.55;color:var(--text-muted);text-wrap:pretty}
-.founder-contacts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 clamp(20px,2vw,40px);max-width:44rem;font-style:normal;font-weight:400}
+/* Two columns only when each can hold the longest handle in one line */
+.founder-contacts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,15.5rem),1fr));gap:0 clamp(20px,2vw,40px);max-width:44rem;font-style:normal;font-weight:400}
 .contact-channel{display:flex;flex-direction:column;justify-content:center;gap:4px;min-width:0;padding:clamp(12px,1vw,18px) 0;border-bottom:1px solid rgb(25 62 50 / .2)}
 .contact-channel-wide{grid-column:1/-1}
 .contact-label{font-size:var(--fs-small);line-height:1.3;color:var(--text-muted)}
@@ -320,7 +326,6 @@ a:hover>.trail-link::after,a:focus-visible>.trail-link::after,
   .product-copy{max-width:none}
   .editorial-grid>.lineup{margin-top:8px}
   .models-wendougee{grid-template-columns:repeat(6,minmax(0,1fr))}.models-wendougee .model{grid-column:span 2}.models-wendougee .model:nth-last-child(-n+2){grid-column:span 3}
-  .equipment-layout{--topo-fade:linear-gradient(0deg,#000 0 10%,rgb(0 0 0 / .45) 20%,transparent 28%);--topo-position:62% bottom;--topo-size:auto 150%;padding-bottom:clamp(150px,30vw,220px)}
   .contact-layout{grid-template-columns:minmax(0,1fr);gap:clamp(36px,6vw,56px)}
   .founder-profile{max-width:46rem}
   .contact-layout>.contact-form{margin-inline:0}
