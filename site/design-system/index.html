@@ -213,10 +213,11 @@
         <h3 class="ds-sub">Шкала</h3>
         <p class="ds-sub-note">Размеры плавные: растут от телефона шириной 375 px до экрана 1920 px и дальше не увеличиваются. В формулах rem вместе с vw, поэтому масштабирование браузера работает. Иерархия строится сразу размером, насыщенностью и цветом: название, лид, подзаголовки пунктов, текст.</p>
         <div class="type-scale">
-          <div class="type-row"><p class="display">Автоматизация кофейного бизнеса</p><div class="type-meta"><code>--fs-hero</code><span>52-128 px, Ysabeau 700, 1.0</span><span>Заголовок первого экрана</span></div></div>
+          <div class="type-row"><p class="display">Автоматизация кофейного бизнеса</p><div class="type-meta"><code>--fs-hero</code><span>52-112 px, Ysabeau 700, 1.0</span><span>Заголовок первого экрана</span></div></div>
           <div class="type-row"><p class="h1">DrinkX</p><div class="type-meta"><code>--fs-brand</code><span>44-112 px, Ysabeau 700, 1.0</span><span>Название бренда; у DrinkX на ступень крупнее</span></div></div>
           <div class="type-row"><p class="h2">Подбор и комплектация</p><div class="type-meta"><code>--fs-h2</code><span>36-84 px, Ysabeau 700</span><span>Крупные блоки</span></div></div>
           <div class="type-row"><p class="person">Дмитрий Онищук</p><div class="type-meta"><code>--fs-person</code><span>32-60 px, Ysabeau 700</span><span>Имя основателя</span></div></div>
+          <div class="type-row"><p class="subtitle">Кофейные станции без бариста</p><div class="type-meta"><code>--fs-subtitle</code><span>22-38 px, Ysabeau 600, зелёный</span><span>Что делает бренд, под его названием</span></div></div>
           <div class="type-row"><p class="h3">Обсудить ваш проект</p><div class="type-meta"><code>--fs-h3</code><span>30-48 px, Ysabeau 700</span><span>Заголовок формы</span></div></div>
           <div class="type-row"><p class="lead">Кофейная точка, где гость выбирает напиток на экране, а станция готовит его без участия бариста.</p><div class="type-meta"><code>--fs-lead</code><span>19-28 px, Ysabeau 500, 1.38</span><span>Главный текст раздела, читается сразу после названия</span></div></div>
           <div class="type-row"><p class="fact">Станции S100 / S400</p><div class="type-meta"><code>--fs-fact</code><span>17-22 px, Ysabeau 700</span><span>Подзаголовок пункта, контакты</span></div></div>
@@ -250,7 +251,7 @@
         </figure>
         <figure class="topo-tile">
           <div class="topo topo-cream topo-trail" data-topo-lit><span>Кремовый, бежевые линии и тропа</span></div>
-          <figcaption><h3>Тёплая плашка</h3><p class="ds-note"><strong>На лендинге:</strong> блок «Комплектация». Классы <code>.topo-cream .topo-trail</code>.</p></figcaption>
+          <figcaption><h3>Тёплая плашка</h3><p class="ds-note">Вставки в документах и презентациях. На лендинге раздел «Комплектация» открытый, без плашки. Классы <code>.topo-cream .topo-trail</code>.</p></figcaption>
         </figure>
         <figure class="topo-tile">
           <div class="topo topo-green topo-trail" data-topo-lit><span>Зелёный, белые линии и тропа</span></div>
@@ -404,8 +405,8 @@
         <h3 class="ds-sub">Раздел бренда</h3>
         <article class="spread product-section section-drinkx" data-reveal>
           <div class="editorial-grid">
-            <header class="section-heading"><p class="section-kicker"><span class="section-index">01</span>Кофейные станции без бариста</p><h2>DrinkX</h2></header>
-            <figure class="product-visual topo" data-topo-lit data-follow><img src="/assets/products/drinkx-user-station.webp" width="991" height="1331" alt="Кофейная станция DrinkX: стойка с подсветкой, кран и экран заказа" draggable="false"><figcaption class="stage-label">Станция DrinkX</figcaption></figure>
+            <header class="section-heading"><h2>DrinkX</h2><p class="section-subtitle">Кофейные станции без бариста</p></header>
+            <figure class="product-visual topo" data-topo-lit><img src="/assets/products/drinkx-user-station.webp" width="991" height="1331" alt="Кофейная станция DrinkX: стойка с подсветкой, кран и экран заказа" draggable="false"></figure>
             <div class="product-copy">
               <p class="section-summary">Кофейная точка, где гость выбирает напиток на экране, а станция готовит его без участия бариста.</p>
               <div class="section-details">
@@ -423,16 +424,22 @@
             </div></div>
           </div>
         </article>
-        <p class="ds-note"><strong>Из чего собран раздел.</strong> Номер направления и категория над названием. Сцена: арка из палитры брендбука со светлой картой внутри, она тянется на высоту текста, поэтому нет пустых полей. Метка карты на сцене называет изделие. Пункты отмечены точками маршрута. Колонка текста шириной с текст, до 42rem. Крупная станция следует за курсором не дальше 6 × 5 px. У карточек моделей поднимается только картинка, сама карточка и подпись стоят на месте; под курсором теплится свет. На телефоне и с режимом «меньше движения» всё статично.</p>
+        <p class="ds-note"><strong>Из чего собран раздел.</strong> Название бренда и зелёная строка под ним: что бренд делает. Сцена: арка из палитры брендбука со светлой картой внутри, она тянется на высоту текста, поэтому нет пустых полей. На сцене только товар, без подписей. Пункты отмечены точками маршрута. Колонка текста шириной с текст, до 42rem. Под курсором товар чуть приближается: масштаб 1,06 от нижней точки, тень глубже. У карточек моделей поднимается только картинка, сама карточка и подпись стоят на месте; под курсором теплится свет. На телефоне и с режимом «меньше движения» всё статично.</p>
       </div>
 
       <div class="ds-block">
-          <h3 class="ds-sub">Компактный блок на плашке</h3>
-          <div class="equipment-layout plate topo topo-cream topo-trail" data-topo-lit>
-            <header class="equipment-heading"><h2>Подбор и комплектация<br>оборудования для общепита</h2><p>Индивидуально подбираем оборудование под заказ: столы, льдогенераторы, кондитерские витрины и другие позиции.</p></header>
-            <div class="equipment-action"><button class="product-cta" type="button" data-spotlight>Подбор и комплектация</button></div>
+          <h3 class="ds-sub">Открытый раздел со списком</h3>
+          <div class="equipment-layout">
+            <header class="equipment-heading"><h2>Подбор и комплектация оборудования для общепита</h2><p>Индивидуально подбираем оборудование под заказ.</p><div class="equipment-action"><button class="product-cta" type="button" data-spotlight>Подбор и комплектация</button></div></header>
+            <ul class="equipment-list" data-cascade aria-label="Что подбираем"><li style="--i:0"><span>Столы</span></li><li style="--i:1"><span>Льдогенераторы</span></li><li style="--i:2"><span>Кондитерские витрины</span></li><li style="--i:3"><span>И другие позиции</span></li></ul>
           </div>
-          <p class="ds-note"><strong>На лендинге:</strong> раздел «Комплектация». Заголовок, один абзац и кнопка, без карточек с преимуществами. Карта видна по всей плашке, у заголовка и текста ореол цвета плашки.</p>
+          <p class="ds-note"><strong>На лендинге:</strong> раздел «Комплектация». Стоит прямо на фоне страницы, без плашки и карточек. Позиции списка поднимаются по очереди, линии под ними прорисовываются слева направо. Под курсором строка зеленеет и сдвигается вправо. Атрибут <code>data-cascade</code>, задержки через <code>--i</code>.</p>
+      </div>
+
+      <div class="ds-block">
+          <h3 class="ds-sub">Фото под стираемым слоем</h3>
+          <div class="founder-head ds-founder"><figure class="founder-photo" data-scratch><img src="/assets/team/dmitry-onishchuk.jpg" alt="Дмитрий Онищук" width="427" height="640" loading="lazy" decoding="async" draggable="false"></figure><div class="founder-id"><p class="person">Дмитрий Онищук</p><p class="founder-role">Основатель DAO COFFEE GROUP</p></div></div>
+          <p class="ds-note"><strong>На лендинге:</strong> фото основателя. Поверх фото зелёный слой с картой и подсказкой, его стирают мышью с зажатой кнопкой, пером или пальцем. Когда стёрта половина, слой растворяется. С клавиатуры слой убирает кнопка «Показать фото». Без скриптов фото просто видно. Атрибут <code>data-scratch</code>.</p>
       </div>
 
       <div class="blocks-pair">
@@ -507,11 +514,14 @@
         <li class="motion-item"><span class="num">3</span><h3>Бегущий пунктир</h3><p><strong>Где:</strong> ссылки меню, контакты, разделители.</p><p>Пунктир тропы проявляется и идёт вперёд, пока курсор на ссылке.</p></li>
         <li class="motion-item"><span class="num">4</span><h3>Тропа рисуется</h3><p><strong>Где:</strong> разделители в документах; на лендинге не используется.</p><p>Один раз при появлении на экране линия прорисовывается слева направо за 1,6 с.</p></li>
         <li class="motion-item"><span class="num">5</span><h3>Подъём картинки</h3><p><strong>Где:</strong> карточки моделей.</p><p>Картинка поднимается на 5 px, тень под ней становится мягче. Карточка и подпись на месте.</p></li>
-        <li class="motion-item"><span class="num">6</span><h3>Товар следит за курсором</h3><p><strong>Где:</strong> крупное оборудование раздела.</p><p>Смещение не больше 6 × 5 px, XLVI и Ceado двигаются независимо. Атрибут <code>data-follow</code>.</p></li>
+        <li class="motion-item"><span class="num">6</span><h3>Товар приближается</h3><p><strong>Где:</strong> оборудование на первом экране и в разделах.</p><p>Масштаб 1,06 от нижней точки за 600 ms, тень становится глубже. XLVI и Ceado приближаются по отдельности.</p></li>
         <li class="motion-item"><span class="num">7</span><h3>Нажатие</h3><p><strong>Где:</strong> все кнопки.</p><p>Масштаб 0,97 за 150 ms, затем мягкий возврат. Подтверждает, что нажатие принято.</p></li>
         <li class="motion-item"><span class="num">8</span><h3>Галочка рисуется</h3><p><strong>Где:</strong> выбор направлений, согласие.</p><p>Отметка прорисовывается слева направо за 350 ms.</p></li>
         <li class="motion-item"><span class="num">9</span><h3>Живые значки</h3><p><strong>Где:</strong> иконки, если их согласуют.</p><p>У каждого значка своё маленькое движение при наведении: стрелка, флаг, огонь, пар, солнце, маршрут.</p></li>
         <li class="motion-item"><span class="num">10</span><h3>Появление блока</h3><p><strong>Где:</strong> заголовки, товары, тексты.</p><p>Блок поднимается на 16 px и набирает полную яркость. До этого он уже виден, просто чуть прозрачнее.</p></li>
+        <li class="motion-item"><span class="num">11</span><h3>Пачки расходятся</h3><p><strong>Где:</strong> раздел DAO COFFEE.</p><p>Боковые пачки отходят в стороны и чуть сильнее наклоняются, все три приближаются на 5%.</p></li>
+        <li class="motion-item"><span class="num">12</span><h3>Список по очереди</h3><p><strong>Где:</strong> раздел «Комплектация».</p><p>Строки поднимаются из-под линии с шагом 140 ms, линии прорисовываются следом. Атрибут <code>data-cascade</code>.</p></li>
+        <li class="motion-item"><span class="num">13</span><h3>Стираемый слой</h3><p><strong>Где:</strong> фото основателя.</p><p>Слой стирается кистью под курсором или пальцем и растворяется за 700 ms, когда стёрта половина. Атрибут <code>data-scratch</code>.</p></li>
       </ol>
 
       <div class="ds-rules">

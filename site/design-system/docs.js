@@ -2,7 +2,6 @@
 // figures, chapter navigation, the "no motion" preview, demo-only motion and
 // the demo form. Shared brand effects come from /scripts/effects.js.
 (() => {
-  const finePointer = matchMedia('(hover: hover) and (pointer: fine)');
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const root = document.documentElement;
   const toast = document.querySelector('#toast');
@@ -92,17 +91,6 @@
     }, { threshold: .15 });
     revealing.forEach(element => revealObserver.observe(element));
   }
-  document.querySelectorAll('[data-follow]').forEach(area => {
-    const images = area.querySelectorAll('img');
-    area.addEventListener('pointermove', event => {
-      if (event.pointerType !== 'mouse' || !finePointer.matches || reduced.matches || root.hasAttribute('data-motion-off')) return;
-      const box = area.getBoundingClientRect();
-      const x = Math.max(-1, Math.min(1, (event.clientX - box.left) / box.width * 2 - 1)) * 6;
-      const y = Math.max(-1, Math.min(1, (event.clientY - box.top) / box.height * 2 - 1)) * 5;
-      images.forEach(image => { image.style.setProperty('--fx', `${x.toFixed(2)}px`); image.style.setProperty('--fy', `${y.toFixed(2)}px`); });
-    });
-    area.addEventListener('pointerleave', () => images.forEach(image => { image.style.removeProperty('--fx'); image.style.removeProperty('--fy'); }));
-  });
 
   // Demo form: the same rules and messages as the landing form, nothing is sent.
   const form = document.querySelector('#ds-form');

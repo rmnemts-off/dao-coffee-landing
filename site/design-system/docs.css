@@ -203,7 +203,6 @@ code{font:400 12.5px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(-
 /* ---------- Landing blocks ---------- */
 /* The brand spread demo is the landing section itself, framed as a card. */
 .spread{padding-inline:clamp(20px,3vw,48px);border-radius:var(--radius-card);--column-gap:clamp(24px,3vw,56px)}
-.spread .product-visual img{translate:var(--fx,0) var(--fy,0);transition:translate .55s var(--ease)}
 @media(max-width:960px){.spread .editorial-grid{grid-template-columns:minmax(0,1fr)}}
 .contact-demo{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,15.5rem),1fr));gap:0 24px;max-width:560px}
 .blocks-pair{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
@@ -330,6 +329,8 @@ code{font:400 12.5px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(-
 .h3{font:700 var(--fs-h3)/1.08 var(--heading);letter-spacing:-.035em;text-wrap:balance}
 .h4{font:700 var(--fs-card)/1.2 var(--heading);letter-spacing:-.01em}
 .fact{font:700 var(--fs-fact)/1.25 var(--heading);letter-spacing:-.01em}
+.subtitle{font:600 var(--fs-subtitle)/1.12 var(--heading);letter-spacing:-.02em;color:var(--green)}
+.ds-founder{max-width:40rem}
 .lead{font:500 var(--fs-lead)/1.38 var(--heading);letter-spacing:-.008em;text-wrap:pretty}
 .text{font:300 var(--fs-body)/1.55 var(--body);text-wrap:pretty}
 .small{font:300 var(--fs-small)/1.5 var(--body)}

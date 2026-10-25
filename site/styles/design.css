@@ -15,12 +15,13 @@
   --heading:'Ysabeau Office',sans-serif;--body:'Fira Sans',sans-serif;
 
   /* Type scale: one size per role */
-  --fs-hero:clamp(3.25rem,2.1rem + 4.92vw,8rem);           /* 52 → 128 */
+  --fs-hero:clamp(3.25rem,5.8vw,7rem);                     /* 52 → 112, half of a two-column hero */
   --fs-brand:clamp(2.75rem,1.72rem + 4.4vw,7rem);          /* 44 → 112: brand titles */
   --fs-brand-lead:clamp(3rem,1.85rem + 4.92vw,7.75rem);    /* 48 → 124: DrinkX, the main accent */
   --fs-h2:clamp(2.25rem,1.52rem + 3.1vw,5.25rem);          /* 36 → 84 */
   --fs-h3:clamp(1.875rem,1.6rem + 1.17vw,3rem);            /* 30 → 48 */
   --fs-person:clamp(2rem,1.25rem + 1.8vw,3.75rem);         /* 32 → 60 */
+  --fs-subtitle:clamp(1.375rem,1.05rem + 1.1vw,2.375rem);  /* 22 → 38: what a brand makes, under its title */
   --fs-lead:clamp(1.1875rem,1.05rem + .58vw,1.75rem);      /* 19 → 28 */
   --fs-hero-lead:clamp(1.125rem,.97rem + .65vw,1.75rem);   /* 18 → 28 */
   --fs-fact:clamp(1.0625rem,.99rem + .32vw,1.375rem);      /* 17 → 22 */
@@ -115,18 +116,27 @@ a:hover>.trail-link::after,a:focus-visible>.trail-link::after,
 .mobile-menu{position:absolute;top:100%;inset-inline:0;padding:16px var(--gutter) 28px;background:var(--gray);box-shadow:0 14px 18px rgb(4 6 6 / .06)}
 .mobile-menu nav{display:grid;grid-template-columns:1fr 1fr;gap:4px 24px}.mobile-menu a{justify-self:start;padding-block:12px;font-size:1.125rem;--trail-offset:8px}
 
-/* ---------- Hero: the grey brandbook pattern, faded behind the text ---------- */
+/* ---------- Hero: what the company does on the left, the equipment it supplies on the right ---------- */
 .hero{
   --topo-src:url('/assets/pattern/topo.svg');--topo-size:contain;--topo-ink:var(--white);--topo-rest:.38;--topo-radius:320px;
-  --topo-fade:radial-gradient(ellipse at 50% 50%,rgb(0 0 0 / .1) 22%,#000 76%);
-  min-height:calc(100svh - var(--header-height));display:grid;align-items:center;padding-block:clamp(40px,6vh,96px);background:var(--gray)
+  --topo-fade:radial-gradient(ellipse 46% 64% at 24% 50%,rgb(0 0 0 / .1) 30%,#000 90%);
+  min-height:calc(100svh - var(--header-height));display:grid;align-items:center;padding-block:clamp(32px,5vh,80px);background:var(--gray)
 }
 @media(max-aspect-ratio:1/1){.hero{--topo-src:url('/assets/pattern/topo-portrait.svg')}}
-.hero-content{position:relative;min-width:0;text-align:center}
+.hero-content{position:relative;min-width:0;display:grid;grid-template-columns:minmax(0,1.12fr) minmax(0,1fr);align-items:center;gap:clamp(24px,3vw,72px)}
+.hero-copy{min-width:0}
 .hero h1{font-size:var(--fs-hero);line-height:1;letter-spacing:-.045em}
 .hero h1 span{font-weight:700}
-.hero-description{max-width:40ch;margin:clamp(20px,2vw,36px) auto 0;font:500 var(--fs-hero-lead)/1.42 var(--heading);text-wrap:pretty}
-.hero-actions{display:flex;justify-content:center;margin-top:clamp(28px,2.6vw,48px)}
+.hero-description{max-width:36ch;margin-top:clamp(20px,2vw,36px);font:500 var(--fs-hero-lead)/1.42 var(--heading);text-wrap:pretty}
+.hero-actions{display:flex;margin-top:clamp(28px,2.6vw,48px)}
+/* Three real pieces standing together; each one leads to its section */
+.hero-showcase{position:relative;width:100%;max-width:58rem;aspect-ratio:1.18/1;justify-self:end}
+.hero-showcase::after{content:'';position:absolute;z-index:0;left:4%;right:2%;bottom:1%;height:9%;border-radius:50%;background:radial-gradient(closest-side,rgb(25 62 50 / .16),transparent);pointer-events:none}
+.showcase-item{position:absolute;z-index:1;display:block;border-radius:var(--radius-card)}
+.showcase-item img{width:100%;height:100%;object-fit:contain;filter:var(--shadow-product);pointer-events:none;user-select:none;-webkit-user-drag:none;transform-origin:50% 85%;transition:transform .6s var(--ease),filter .6s var(--ease)}
+.showcase-drinkx{left:30%;bottom:5%;width:52%;aspect-ratio:991/1331}
+.showcase-ceado{z-index:2;right:0;bottom:6%;width:23%;aspect-ratio:429/1035}
+.showcase-wendougee{z-index:3;left:0;bottom:2%;width:57%;aspect-ratio:1400/872}
 
 /* ---------- Buttons: always a pill, no arrows. Pressed state comes from main.js ---------- */
 .cta,.product-cta{position:relative;isolation:isolate;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;max-width:100%;border-radius:var(--radius-pill);font:400 var(--fs-label)/1.3 var(--body);--spot:var(--glow-cream)}
@@ -152,10 +162,8 @@ a:hover>.trail-link::after,a:focus-visible>.trail-link::after,
 .section-heading{grid-area:heading;margin-bottom:clamp(18px,1.6vw,32px)}
 .section-heading h2{font-size:var(--fs-brand);line-height:1;letter-spacing:-.035em}
 .section-drinkx .section-heading h2{font-size:var(--fs-brand-lead)}
-/* Direction number and category above the brand title */
-.section-kicker{display:flex;align-items:center;gap:14px;margin-bottom:clamp(12px,1vw,20px);font:400 var(--fs-label)/1.3 var(--body);color:var(--text-muted)}
-.section-index{display:inline-flex;align-items:center;gap:14px;font:700 var(--fs-fact)/1 var(--heading);color:var(--green);font-variant-numeric:tabular-nums}
-.section-index::after{content:'';width:clamp(22px,2vw,40px);height:1.5px;background:currentColor;opacity:.45}
+/* The category reads as the second line of the title */
+.section-subtitle{margin-top:clamp(6px,.6vw,12px);font:600 var(--fs-subtitle)/1.12 var(--heading);letter-spacing:-.02em;color:var(--green);text-wrap:balance}
 
 /* Stage: the brandbook arch with a light map inside; the product stands on it like on a podium. */
 .product-section{--stage:color-mix(in srgb,var(--white) 55%,var(--cream))}
@@ -173,9 +181,23 @@ a:hover>.trail-link::after,a:focus-visible>.trail-link::after,
 .section-linkbar{--fit-w:90%;--fit-h:clamp(12rem,4rem + 18vw,30rem)}
 .section-coffee{--fit-h:clamp(16rem,6rem + 22vw,34rem)}
 .section-water{--fit-w:80%;--fit-h:clamp(15rem,5rem + 20vw,32rem)}
-/* A map marker naming what is on the stage */
-.stage-label{position:absolute;left:clamp(16px,1rem + .8vw,32px);bottom:clamp(16px,1rem + .6vw,30px);display:inline-flex;align-items:center;gap:10px;max-width:calc(100% - 32px);padding:9px 16px 9px 12px;border-radius:var(--radius-pill);background:rgb(255 255 255 / .74);box-shadow:0 1px 0 rgb(25 62 50 / .06);font:400 var(--fs-small)/1.2 var(--body);color:var(--ink);white-space:nowrap}
-.stage-label::before{content:'';flex:none;width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 0 4px rgb(29 100 79 / .16)}
+.product-visual>img,.italian-piece img{transform-origin:50% 80%;transition:transform .6s var(--ease),filter .6s var(--ease)}
+/* Coffee: three packs; the small ones lean in behind the 1000 g pack */
+.coffee-stack{display:flex;align-items:flex-end;justify-content:center;width:100%}
+.coffee-stack .pack{position:relative;width:auto;height:var(--pack-h);filter:var(--shadow-product);transform:translate(var(--tx,0),var(--ty,0)) rotate(var(--rot,0deg)) scale(var(--sc,1));transform-origin:50% 100%;transition:transform .7s var(--ease),filter .7s var(--ease)}
+.coffee-stack{--main-h:clamp(16rem,5rem + 20vw,32rem)}
+.pack-main{--pack-h:var(--main-h);z-index:2}
+.pack-left,.pack-right{--pack-h:calc(var(--main-h) * .613);z-index:1;--ty:-2%}
+.pack-left{--rot:-7deg;margin-right:-7%}
+.pack-right{--rot:7deg;margin-left:-7%}
+
+/* Hover: the picture comes a little closer instead of drifting sideways */
+@media(hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){
+  .product-visual:hover>img,.italian-piece:hover img,.showcase-item:hover img,.showcase-item:focus-visible img{transform:scale(1.06);filter:drop-shadow(0 26px 20px rgb(25 62 50 / .17)) drop-shadow(0 4px 3px rgb(4 6 6 / .08))}
+  .product-visual:hover .pack-main{--sc:1.05;--ty:-2%}
+  .product-visual:hover .pack-left{--tx:-16%;--rot:-11deg;--sc:1.05}
+  .product-visual:hover .pack-right{--tx:16%;--rot:11deg;--sc:1.05}
+}
 
 .product-copy{grid-area:copy;min-width:0}
 .section-summary{max-width:34ch;font:500 var(--fs-lead)/1.38 var(--heading);letter-spacing:-.008em;text-wrap:pretty}
@@ -221,11 +243,26 @@ a:hover>.trail-link::after,a:focus-visible>.trail-link::after,
 .italian-piece img{width:100%;height:clamp(14rem,4rem + 18vw,30rem);object-fit:contain;filter:drop-shadow(0 14px 10px rgb(25 62 50 / .13))}
 .italian-piece .ceado-grinder{height:clamp(13rem,3.7rem + 16.8vw,28rem)}
 .section-xlvi-ceado .product-visual{padding-bottom:clamp(32px,1.5rem + 2vw,72px)}
-.italian-caption{display:inline-flex;align-items:center;gap:10px;margin-top:clamp(14px,1.2vw,24px);padding:9px 16px 9px 12px;border-radius:var(--radius-pill);background:rgb(255 255 255 / .74);box-shadow:0 1px 0 rgb(25 62 50 / .06);font:400 var(--fs-small)/1.2 var(--body);text-align:center}
-.italian-caption::before{content:'';flex:none;width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 0 4px rgb(29 100 79 / .16)}
+.italian-caption{margin-top:clamp(14px,1.2vw,24px);font:400 var(--fs-small)/1.3 var(--body);color:var(--text-muted);text-align:center}
 
-/* ---------- Equipment brief on the full cream map ---------- */
+/* ---------- Equipment brief: open on the page, the items arrive one by one ---------- */
 .equipment-section{position:relative;padding-block:var(--section-pad);background:var(--sand)}
+.equipment-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);align-items:center;gap:clamp(32px,4vw,104px)}
+.equipment-heading h2{font-size:var(--fs-h2);line-height:1.04;letter-spacing:-.035em}
+.equipment-heading>p{max-width:34ch;margin-top:clamp(18px,1.6vw,28px);font:500 var(--fs-lead)/1.4 var(--heading);text-wrap:pretty}
+.equipment-action{margin-top:clamp(28px,2.4vw,44px)}
+/* Each item rises out of its line, then the rule under it draws from left to right */
+.equipment-list{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.equipment-list li{position:relative;overflow:hidden;padding-block:clamp(14px,1.3vw,26px);font:700 var(--fs-h3)/1.1 var(--heading);letter-spacing:-.03em}
+.equipment-list li::after{content:'';position:absolute;left:0;right:0;bottom:0;height:1px;background:var(--ink);opacity:.22;transform-origin:left}
+.equipment-list span{display:inline-block;transition:color var(--duration-medium) var(--ease),translate var(--duration-medium) var(--ease)}
+.js-motion [data-cascade] li span{translate:0 110%;transition:translate .9s var(--ease) calc(var(--i) * 140ms + 120ms),color var(--duration-medium) var(--ease)}
+.js-motion [data-cascade] li::after{transform:scaleX(0);transition:transform 1.1s var(--ease) calc(var(--i) * 140ms + 220ms)}
+.js-motion [data-cascade].is-in li span{translate:0 0}
+.js-motion [data-cascade].is-in li::after{transform:scaleX(1)}
+@media(hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){
+  .equipment-list li:hover span{color:var(--green);translate:clamp(10px,1vw,18px) 0;transition-delay:0s}
+}
 .plate{border-radius:var(--radius-card)}
 /* Text on a map plate is labelled the way a topographic map labels places:
    a halo in the plate colour stops the contour lines just short of the letters. */
@@ -233,12 +270,6 @@ a:hover>.trail-link::after,a:focus-visible>.trail-link::after,
   --halo:var(--topo-ground);
   text-shadow:0 0 .05em var(--halo),0 0 .1em var(--halo),0 0 .18em var(--halo),0 0 .3em var(--halo),0 0 .45em var(--halo)
 }
-.equipment-layout{
-  display:grid;grid-template-columns:minmax(0,1fr);justify-items:start;row-gap:clamp(28px,2.6vw,48px);
-  padding:clamp(32px,1rem + 4vw,104px)
-}
-.equipment-heading h2{font-size:var(--fs-h2);line-height:1.04;letter-spacing:-.035em}
-.equipment-heading>p{max-width:42ch;margin-top:clamp(18px,1.6vw,28px);font:500 var(--fs-lead)/1.4 var(--heading);text-wrap:pretty}
 
 /* ---------- Founder and enquiry form ---------- */
 .contact-section{position:relative;padding-block:var(--section-pad);background:var(--sage)}
@@ -246,7 +277,14 @@ a:hover>.trail-link::after,a:focus-visible>.trail-link::after,
 .contact-layout>.contact-form{margin-inline:auto 0}
 .founder-profile{display:grid;gap:clamp(24px,2.4vw,44px);min-width:0}
 .founder-head{display:grid;grid-template-columns:clamp(9rem,5rem + 8vw,15rem) minmax(0,1fr);gap:clamp(18px,2vw,40px);align-items:end}
-.founder-photo{width:100%;aspect-ratio:4/5;overflow:hidden;border-radius:var(--radius-card)}
+.founder-photo{position:relative;width:100%;aspect-ratio:4/5;overflow:hidden;border-radius:var(--radius-card)}
+/* Scratch-off cover drawn by effects.js; without scripts the photo is simply visible */
+.scratch-cover{position:absolute;inset:0;z-index:1;width:100%;height:100%;cursor:grab;touch-action:none;transition:opacity .7s var(--ease)}
+.scratch-cover:active{cursor:grabbing}
+.founder-photo:focus-visible{outline:2px solid var(--green);outline-offset:3px}
+.scratch-cover.is-done{opacity:0;pointer-events:none}
+.scratch-reveal{position:absolute;z-index:2;left:8px;bottom:8px;padding:6px 10px;border-radius:var(--radius-pill);background:var(--cream);font:400 var(--fs-small)/1.2 var(--body);color:var(--ink);opacity:0;pointer-events:none}
+.scratch-reveal:focus-visible{opacity:1;pointer-events:auto;outline:2px solid var(--green);outline-offset:2px}
 .founder-photo img{width:100%;height:100%;object-fit:cover;object-position:50% 12%;pointer-events:none;user-select:none;-webkit-user-select:none;-webkit-user-drag:none}
 .founder-id{display:grid;gap:10px;min-width:0}
 .founder-id h2{font-size:var(--fs-person);line-height:1.02;letter-spacing:-.035em}
@@ -351,7 +389,12 @@ a:hover>.trail-link::after,a:focus-visible>.trail-link::after,
 @media(max-width:960px){
   .editorial-grid,.product-reverse .editorial-grid{grid-template-columns:minmax(0,1fr);grid-template-rows:none;grid-template-areas:"heading" "visual" "copy" "lineup";row-gap:clamp(20px,3vw,32px)}
   .section-heading{margin-bottom:0}
-  .product-visual{--arch:clamp(5.5rem,24vw,10rem);width:100%;min-height:0;padding:clamp(36px,8vw,64px) clamp(16px,4vw,40px) clamp(64px,12vw,88px)}
+  :root{--fs-hero:clamp(3.25rem,1.6rem + 6vw,5.5rem)}
+  .hero-content{grid-template-columns:minmax(0,1fr);gap:clamp(20px,4vw,40px)}
+  .hero-showcase{justify-self:center;max-width:36rem}
+  .equipment-layout{grid-template-columns:minmax(0,1fr)}
+  .coffee-stack{--main-h:clamp(13rem,56vw,24rem)}
+  .product-visual{--arch:clamp(5.5rem,24vw,10rem);width:100%;min-height:0;padding:clamp(36px,8vw,64px) clamp(16px,4vw,40px) clamp(40px,8vw,64px)}
   .section-drinkx{--fit-h:clamp(16rem,72vw,30rem)}
   .section-coffee{--fit-h:clamp(15rem,66vw,28rem)}
   .section-wendougee,.section-linkbar{--fit-w:92%;--fit-h:none}
@@ -371,9 +414,7 @@ a:hover>.trail-link::after,a:focus-visible>.trail-link::after,
   .models{gap:8px}
   .model{padding:12px 10px}
   .model-picture{height:72px}
-  .italian-caption,.stage-label{gap:8px;padding:7px 12px 7px 10px;font-size:.8125rem;text-align:left}
   .italian-composition{max-width:none;gap:16px}.italian-piece img{height:clamp(14rem,62vw,18rem)}.italian-piece .ceado-grinder{height:clamp(13rem,57vw,16.5rem)}
-  .equipment-layout{padding-inline:22px}
   .founder-head{grid-template-columns:minmax(0,8.5rem) minmax(0,1fr);align-items:end}
   .founder-contacts{grid-template-columns:minmax(0,1fr)}
   .contact-form{padding:28px 20px}
