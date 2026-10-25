@@ -4,6 +4,14 @@ import { mkdirSync, chmodSync } from 'node:fs';
 import { dirname, resolve, relative, sep, isAbsolute } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+const positiveId = value => Number.isSafeInteger(value) && value > 0;
+function safeRow(row) {
+  if (row?.state === 'delivered' && (!positiveId(row.crm_id) || ![1, 2].includes(row.entity_type_id))) {
+    return { ...row, state: 'uncertain' };
+  }
+  return row;
+}
+
 // Local single-host journal, outside the public web root. No credentials/IPs are stored.
 export function openLeadStore(filename = ':memory:', { maxOutstanding = 1000 } = {}) {
   if (filename !== ':memory:') {
@@ -33,7 +41,7 @@ export function openLeadStore(filename = ':memory:', { maxOutstanding = 1000 } =
     );
     CREATE INDEX IF NOT EXISTS submissions_state ON submissions(state, updated_at);
     PRAGMA user_version=1;`);
-  const get = id => db.prepare('SELECT * FROM submissions WHERE request_id=?').get(id);
+  const get = id => safeRow(db.prepare('SELECT * FROM submissions WHERE request_id=?').get(id));
   const transaction = operation => {
     db.exec('BEGIN IMMEDIATE');
     try { const result = operation(); db.exec('COMMIT'); return result; }
@@ -44,7 +52,7 @@ export function openLeadStore(filename = ':memory:', { maxOutstanding = 1000 } =
       const { source: _source, ...identity } = lead;
       const hash = createHash('sha256').update(JSON.stringify(identity)).digest('hex');
       return transaction(() => {
-        const existing = db.prepare('SELECT * FROM submissions WHERE idempotency_key=?').get(key);
+        const existing = safeRow(db.prepare('SELECT * FROM submissions WHERE idempotency_key=?').get(key));
         if (existing) return { row: existing, conflict: existing.payload_hash !== hash, fresh: false };
         const outstanding = db.prepare("SELECT count(*) AS count FROM submissions WHERE state!='delivered'").get().count;
         if (outstanding >= maxOutstanding) return { full: true };
@@ -69,7 +77,8 @@ export function openLeadStore(filename = ':memory:', { maxOutstanding = 1000 } =
       });
     },
     finish(id, claim, result, now) {
-      const kind = ['delivered', 'rejected', 'unconfigured'].includes(result?.kind) ? result.kind : 'uncertain';
+      let kind = ['delivered', 'rejected', 'unconfigured'].includes(result?.kind) ? result.kind : 'uncertain';
+      if (kind === 'delivered' && (!positiveId(result.crmId) || ![1, 2].includes(result.entityTypeId))) kind = 'uncertain';
       transaction(() => {
         const lock = db.prepare('SELECT owner FROM delivery_lock WHERE singleton=1').get();
         if (lock?.owner !== claim.owner) throw new Error('Delivery lease expired');
@@ -82,7 +91,7 @@ export function openLeadStore(filename = ':memory:', { maxOutstanding = 1000 } =
       return get(id);
     },
     get,
-    list: () => db.prepare('SELECT request_id,state,created_at,updated_at,crm_id,entity_type_id,contact_id FROM submissions ORDER BY created_at DESC LIMIT 100').all(),
+    list: () => db.prepare("SELECT request_id,state,created_at,updated_at,crm_id,entity_type_id,contact_id FROM submissions ORDER BY (state='delivered' AND crm_id>0 AND entity_type_id IN (1,2)), created_at ASC LIMIT 1100").all().map(safeRow),
     close: () => db.close(),
   };
 }

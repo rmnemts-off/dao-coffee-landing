@@ -1,3 +1,4 @@
+import { DatabaseSync } from 'node:sqlite';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
@@ -163,4 +164,35 @@ test('outstanding capacity stops new reservations but preserves retry/recovery o
   clock = 6000;
   assert.equal((await service.submit(valid(), key)).status, 200);
   assert.equal(store.list().length, 1); assert.equal(sends, 1);
+});
+
+
+test('incomplete delivery metadata and corrupted confirmed IDs cannot produce success', async t => {
+  const filename = journal(t); const store = openLeadStore(filename); t.after(() => store.close());
+  let time = 0;
+  const invalid = createPersistentLeadService({ store, send: async () => ({ kind: 'delivered' }) });
+  assert.equal((await invalid.submit(valid(), randomUUID())).body.code, 'DELIVERY_UNCERTAIN');
+  const key = randomUUID(); let writes = 0, reads = 0;
+  const service = createPersistentLeadService({ store, now: () => time,
+    send: async () => { writes++; return delivered; }, reconcile: async () => { reads++; return delivered; } });
+  const first = await service.submit(valid(), key);
+  const raw = new DatabaseSync(filename);
+  raw.prepare('UPDATE submissions SET crm_id=NULL WHERE request_id=?').run(first.body.requestId); raw.close();
+  time = 6000;
+  assert.equal(store.get(first.body.requestId).state, 'uncertain');
+  assert.equal((await service.submit(valid(), key)).status, 200);
+  assert.equal(writes, 1); assert.equal(reads, 1);
+});
+
+test('operator journal keeps old unresolved requests visible before successful traffic', t => {
+  const store = openLeadStore(); t.after(() => store.close());
+  const old = store.reserve(randomUUID(), valid(), 0).row;
+  const claim = store.claim(old.request_id, 'send', 0);
+  store.finish(old.request_id, claim, { kind: 'uncertain' }, 1);
+  for (let i = 0; i < 110; i++) {
+    const row = store.reserve(randomUUID(), valid(), i + 2).row;
+    store.finish(row.request_id, store.claim(row.request_id, 'send', i + 2), delivered, i + 2);
+  }
+  assert.equal(store.list()[0].request_id, old.request_id);
+  assert.equal(store.list()[0].state, 'uncertain');
 });
