@@ -60,23 +60,25 @@ svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.5;stroke
 /* ---------- Pattern: brandbook contours as a mask, lit around the pointer ---------- */
 .topo{position:relative;isolation:isolate;overflow:hidden;background:var(--topo-ground,transparent)}
 .topo>*{position:relative;z-index:1}
-.topo::before,.topo::after{
-  content:'';position:absolute;inset:0;z-index:0;pointer-events:none;background:var(--topo-ink,var(--white));
-  -webkit-mask:var(--topo-src,url('/assets/pattern/topo.svg')) var(--topo-position,center)/var(--topo-size,cover) no-repeat,var(--topo-fade,linear-gradient(#000,#000));
-  -webkit-mask-composite:source-in;
-  mask:var(--topo-src,url('/assets/pattern/topo.svg')) var(--topo-position,center)/var(--topo-size,cover) no-repeat,var(--topo-fade,linear-gradient(#000,#000));
-  mask-composite:intersect
+.topo>.topo-art{
+  position:absolute;inset:0;z-index:0;pointer-events:none;
+  /* One mask per layer avoids engine-specific mask-composite behaviour.
+     The SVG's transparent margins stay transparent at every aspect ratio. */
+  -webkit-mask-image:var(--topo-fade,linear-gradient(#000,#000));
+  mask-image:var(--topo-fade,linear-gradient(#000,#000))
 }
-.topo::before{opacity:var(--topo-rest,.42)}
+.topo-art::before,.topo-art::after{
+  content:'';position:absolute;inset:0;pointer-events:none;background:var(--topo-ink,var(--white));
+  -webkit-mask:var(--topo-src,url('/assets/pattern/topo.svg')) var(--topo-position,center)/var(--topo-size,cover) no-repeat;
+  mask:var(--topo-src,url('/assets/pattern/topo.svg')) var(--topo-position,center)/var(--topo-size,cover) no-repeat
+}
+.topo-art::before{opacity:var(--topo-rest,.42)}
 /* The lit layer keeps the same fade, so text areas stay clean under the cursor too */
-.topo::after{
-  background:var(--topo-lit-ink,var(--topo-ink,var(--white)));opacity:0;transition:opacity var(--duration-slow) var(--ease);
-  -webkit-mask:var(--topo-src,url('/assets/pattern/topo.svg')) var(--topo-position,center)/var(--topo-size,cover) no-repeat,var(--topo-fade,linear-gradient(#000,#000)),radial-gradient(circle var(--topo-radius,260px) at var(--mx,50%) var(--my,50%),#000 20%,transparent 100%);
-  -webkit-mask-composite:source-in;
-  mask:var(--topo-src,url('/assets/pattern/topo.svg')) var(--topo-position,center)/var(--topo-size,cover) no-repeat,var(--topo-fade,linear-gradient(#000,#000)),radial-gradient(circle var(--topo-radius,260px) at var(--mx,50%) var(--my,50%),#000 20%,transparent 100%);
-  mask-composite:intersect
+.topo-art::after{
+  background:radial-gradient(circle var(--topo-radius,260px) at var(--mx,50%) var(--my,50%),var(--topo-lit-ink,var(--topo-ink,var(--white))) 20%,transparent 100%);
+  opacity:0;transition:opacity var(--duration-slow) var(--ease)
 }
-.topo[data-lit]::after{opacity:1}
+.topo[data-lit]>.topo-art::after{opacity:1}
 .topo-trail{--topo-src:url('/assets/pattern/topo-trail.svg')}
 .topo-cream{--topo-ground:var(--cream);--topo-ink:var(--beige);--topo-lit-ink:var(--green);--topo-rest:.85}
 
@@ -579,7 +581,7 @@ a:hover>.trail-link::after,a:focus-visible>.trail-link::after,
   :root{--modal-open-dur:180ms;--modal-close-dur:120ms;--modal-scale:1;--modal-scale-close:1}
   body:not(.error-page){background-image:linear-gradient(180deg,var(--gray) 0%,var(--sage) 12%,var(--sand) 26%,var(--sage) 40%,var(--sand) 58%,var(--sage) 74%,var(--sand) 88%,var(--sage) 100%)}
   .hero,.product-section,.equipment-section,.contact-section,.site-footer{background:transparent}
-  .topo::after,[data-spotlight]::before,.scratch-cover,.scratch-reveal{display:none}
+  .topo-art::after,[data-spotlight]::before,.scratch-cover,.scratch-reveal{display:none}
   .product-visual>img,.italian-piece img,.showcase-item img,.model-picture img,.coffee-stack .pack{transition:none}
   .reveal{opacity:1;transform:none}
   .t-modal,.t-modal.is-open,.t-modal.is-closing{transform:none;will-change:opacity}
