@@ -3,6 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { mkdtempSync, rmSync, statSync } from 'node:fs';
+import { setImmediate as tick } from 'node:timers/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { openLeadStore } from '../store.mjs';
@@ -43,9 +44,9 @@ test('concurrent identical keys share a single delivery and conflicting payload 
   const service = createPersistentLeadService({ store, send: () => { calls++; return new Promise(r => { complete = r; }); } });
   const first = service.submit(valid(), key), second = service.submit(valid(), key);
   assert.equal((await service.submit(valid({ comment: 'Changed' }), key)).status, 409);
-  assert.equal(calls, 1); complete(delivered);
+  await tick(); assert.equal(calls, 1); complete(delivered);
   assert.deepEqual(await first, await second);
-  const next = service.submit(valid(), randomUUID()); await Promise.resolve(); complete(delivered);
+  const next = service.submit(valid(), randomUUID()); await tick(); complete(delivered);
   assert.equal((await next).status, 200); assert.equal(calls, 2); // a genuinely new inquiry
 });
 
@@ -142,11 +143,11 @@ test('a late short refusal cannot shorten a concurrent worker longer cooldown af
   const newer = createPersistentLeadService({ store: b, now: () => time,
     send: () => new Promise(resolve => { finishNew = resolve; }) });
   const first = slow.submit(valid({ comment: 'Slow worker' }), randomUUID());
-  await Promise.resolve();
+  await tick();
   // Simulate a suspended worker: its lease expires before its remote response.
   time = 61_000;
   const second = newer.submit(valid({ comment: 'New lease owner' }), randomUUID());
-  await Promise.resolve();
+  await tick();
   finishNew({ kind: 'rejected', retryAfter: 60 });
   assert.equal((await second).body.code, 'DELIVERY_FAILED');
   time = 62_000;

@@ -16,23 +16,23 @@ export function createPersistentLeadService({ store, send, reconcile, now = Date
     if (!validIdempotencyKey(key)) return failure(400, 'INVALID_IDEMPOTENCY_KEY');
     key = key.toLowerCase();
     const time = now();
-    const { row, conflict, full } = store.reserve(key, lead, time);
+    const { row, conflict, full } = await store.reserve(key, lead, time);
     if (full) return failure(503, 'DELIVERY_UNAVAILABLE');
     if (conflict) return failure(409, 'IDEMPOTENCY_CONFLICT');
     if (running.has(row.request_id)) return running.get(row.request_id);
-    if (row.state === 'delivered') return success(row);
-    if (row.retry_at > time) return failure(503, row.state === 'uncertain' ? 'DELIVERY_UNCERTAIN' : 'DELIVERY_UNAVAILABLE');
-    if (budget.until <= time) budget = { count: 0, until: time + windowMs };
-    if (budget.count >= globalLimit) return failure(429, 'RATE_LIMITED');
-    const operation = ['processing', 'uncertain'].includes(row.state) ? 'reconcile' : 'send';
-    if (operation === 'reconcile' && typeof reconcile !== 'function') return failure(502, 'DELIVERY_UNCERTAIN');
-    const claim = store.claim(row.request_id, operation, time);
-    if (!claim) return failure(503, 'DELIVERY_PENDING');
-    if (claim.blockedUntil > time) return failure(503, operation === 'reconcile' ? 'DELIVERY_UNCERTAIN' : 'DELIVERY_UNAVAILABLE');
-    if (Object.hasOwn(claim, 'current')) return claim.current?.state === 'delivered'
-      ? success(claim.current) : failure(503, claim.current?.state === 'uncertain' ? 'DELIVERY_UNCERTAIN' : 'DELIVERY_PENDING');
-    budget.count++;
     const pending = Promise.resolve().then(async () => {
+      if (row.state === 'delivered') return success(row);
+      if (row.retry_at > time) return failure(503, row.state === 'uncertain' ? 'DELIVERY_UNCERTAIN' : 'DELIVERY_UNAVAILABLE');
+      if (budget.until <= time) budget = { count: 0, until: time + windowMs };
+      if (budget.count >= globalLimit) return failure(429, 'RATE_LIMITED');
+      const operation = ['processing', 'uncertain'].includes(row.state) ? 'reconcile' : 'send';
+      if (operation === 'reconcile' && typeof reconcile !== 'function') return failure(502, 'DELIVERY_UNCERTAIN');
+      const claim = await store.claim(row.request_id, operation, time);
+      if (!claim) return failure(503, 'DELIVERY_PENDING');
+      if (claim.blockedUntil > time) return failure(503, operation === 'reconcile' ? 'DELIVERY_UNCERTAIN' : 'DELIVERY_UNAVAILABLE');
+      if (Object.hasOwn(claim, 'current')) return claim.current?.state === 'delivered'
+        ? success(claim.current) : failure(503, claim.current?.state === 'uncertain' ? 'DELIVERY_UNCERTAIN' : 'DELIVERY_PENDING');
+      budget.count++;
       let result;
       try {
         result = operation === 'reconcile' ? await reconcile(row.request_id) : await send(JSON.parse(row.payload_json), row.request_id);
@@ -40,7 +40,7 @@ export function createPersistentLeadService({ store, send, reconcile, now = Date
       // Reconciliation errors/empty results must NEVER turn an unknown write into a retryable add.
       if (operation === 'reconcile' && result?.kind !== 'delivered') result = { kind: 'uncertain' };
       let finished;
-      try { finished = store.finish(row.request_id, claim, result, now()); }
+      try { finished = await store.finish(row.request_id, claim, result, now()); }
       catch {
         // The CRM call has happened. A failed local commit (or lost lease) is
         // not proof of remote failure; preserve the journal for reconciliation.

@@ -4,6 +4,7 @@ import { pathToFileURL } from 'node:url';
 import { createLeadService, failure } from './leads.mjs';
 import { bitrixConfig, createBitrixSender, createBitrixReconciler } from './bitrix.mjs';
 import { openLeadStore } from './store.mjs';
+import { openPostgresStore, deliveryRoute } from './postgres-store.mjs';
 import { createPersistentLeadService } from './delivery.mjs';
 
 function parseOrigin(value) {
@@ -55,14 +56,15 @@ export function createServer({ env = process.env, send,
   serviceOptions = {}, maxBytes = 8192, bodyTimeoutMs = 5000, serveStatic } = {}) {
   const configuredSender = Boolean(bitrixConfig(env));
   // Real CRM delivery always requires a persistent local journal. Mock preview may be memory-only.
-  const persistent = Boolean(env.LEADS_DB_PATH);
-  const store = persistent ? openLeadStore(env.LEADS_DB_PATH) : null;
+  const persistent = Boolean(env.DATABASE_URL || env.LEADS_DB_PATH);
+  const store = env.DATABASE_URL ? openPostgresStore(env.DATABASE_URL, { route: deliveryRoute(env) })
+    : persistent ? openLeadStore(env.LEADS_DB_PATH) : null;
   const options = { ...serviceOptions, send: send ?? createBitrixSender({ env }) };
   const service = persistent
     ? createPersistentLeadService({ ...options, store, reconcile: serviceOptions.reconcile ?? createBitrixReconciler({ env }) })
     : createLeadService(options);
   const appOrigin = parseOrigin(env.APP_ORIGIN);
-  const configured = (typeof send === 'function' || (configuredSender && persistent && env.LEADS_DB_PATH !== ':memory:')) && (!env.APP_ORIGIN || Boolean(appOrigin)) &&
+  const configured = (typeof send === 'function' || (configuredSender && persistent && (env.DATABASE_URL || env.LEADS_DB_PATH !== ':memory:'))) && (!env.APP_ORIGIN || Boolean(appOrigin)) &&
     (env.NODE_ENV !== 'production' || appOrigin?.startsWith('https://'));
   let draining = false;
   let activeHandlers = 0;
@@ -70,7 +72,7 @@ export function createServer({ env = process.env, send,
   let shutdownPromise;
   let finishShutdown;
   const finishIfDrained = () => {
-    if (listenerClosed && activeHandlers === 0) finishShutdown?.(true);
+    if (listenerClosed && activeHandlers === 0) closeStore().then(() => finishShutdown?.(true), () => finishShutdown?.(false));
   };
   const server = http.createServer(async (request, response) => {
     // A client socket can close while the CRM call is still running. Track the actual
@@ -80,7 +82,7 @@ export function createServer({ env = process.env, send,
       const pathname = new URL(request.url, 'http://localhost').pathname;
       if (pathname === '/healthz' && request.method === 'GET') return reply(response, { status: 200, body: { ok: true } });
       if (pathname === '/readyz' && request.method === 'GET') return reply(response,
-        configured && !draining ? { status: 200, body: { ok: true } } : failure(503, 'NOT_READY'));
+        configured && !draining && await server.checkStorage() ? { status: 200, body: { ok: true } } : failure(503, 'NOT_READY'));
       if (pathname !== '/api/leads') {
         if (serveStatic) return await serveStatic(request, response);
         return reply(response, failure(404, 'NOT_FOUND'));
@@ -118,13 +120,16 @@ export function createServer({ env = process.env, send,
     } finally {
       activeHandlers--;
       finishIfDrained();
-      if (listenerClosed && activeHandlers === 0) closeStore();
+      if (listenerClosed && activeHandlers === 0) closeStore().catch(() => {});
     }
   });
   // Close the journal only after all handlers, including disconnected clients, finish.
-  let storeClosed = false;
-  const closeStore = () => { if (store && !storeClosed) { storeClosed = true; store.close(); } };
-  server.on('close', () => { if (activeHandlers === 0) closeStore(); });
+  let storeClosePromise;
+  const closeStore = () => storeClosePromise ??= Promise.resolve().then(() => store?.close());
+  server.on('close', () => { if (activeHandlers === 0) closeStore().catch(() => {}); });
+  server.checkStorage = async () => {
+    try { return store?.ready ? await store.ready() : true; } catch { return false; }
+  };
   server.headersTimeout = 10_000;
   server.requestTimeout = 15_000;
   server.maxRequestsPerSocket = 100;
@@ -155,11 +160,16 @@ export function createServer({ env = process.env, send,
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  if (process.env.NODE_ENV === 'production' && (!bitrixConfig(process.env) || !process.env.LEADS_DB_PATH || process.env.LEADS_DB_PATH === ':memory:' || !parseOrigin(process.env.APP_ORIGIN)?.startsWith('https://'))) {
+  if (process.env.NODE_ENV === 'production' && (!bitrixConfig(process.env) || !process.env.DATABASE_URL || !parseOrigin(process.env.APP_ORIGIN)?.startsWith('https://'))) {
     console.error('Missing production configuration. See backend/README.md.');
     process.exitCode = 1;
   } else {
     const server = createServer({ serviceOptions: { onDelivery: event => console.log(JSON.stringify(event)) } });
+    if (!await server.checkStorage()) {
+      console.error('Database unavailable or schema version unsupported.');
+      await server.shutdown();
+      process.exit(1);
+    }
     const port = Number(process.env.PORT || 4322);
     const host = process.env.HOST || '127.0.0.1';
     server.listen(port, host, () => console.log(`DAO API listening on ${host}:${port}`));

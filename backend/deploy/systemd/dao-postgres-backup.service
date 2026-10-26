@@ -1,0 +1,11 @@
+[Unit]
+Description=Back up DAO PostgreSQL to a private local archive
+After=postgresql.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/dao-postgres-backup
+UMask=0077
+TimeoutStartSec=300
+Nice=10
+IOSchedulingClass=idle

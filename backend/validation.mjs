@@ -33,6 +33,12 @@ export function validateLead(body) {
   if (typeof comment !== 'string' || length(comment) > 1000) fieldErrors.comment = 'Комментарий должен содержать не более 1000 символов.';
   if (body.consent !== true) fieldErrors.consent = 'Отметьте согласие на обработку персональных данных.';
   if (!has(sources, body.source) || (body.source === 'brand-modal') !== (body.product !== null)) fieldErrors.source = 'Неверный контекст формы.';
+  for (const field of ['name', 'model', 'comment']) {
+    const value = body[field];
+    if (typeof value === 'string' && (value.includes('\0') || !value.isWellFormed())) {
+      fieldErrors[field] = 'Текст содержит недопустимые символы.';
+    }
+  }
   if (Object.keys(fieldErrors).length) return { fieldErrors };
   return { lead: { schemaVersion: 1, name, phone: body.phone, product: body.product,
     interests: [...interests].sort(), model: model || null, comment: comment.trim(), consent: true, source: body.source } };

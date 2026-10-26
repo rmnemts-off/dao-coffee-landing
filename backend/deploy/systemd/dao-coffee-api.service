@@ -1,7 +1,7 @@
 [Unit]
 Description=DAO COFFEE lead delivery API
-Wants=network-online.target
-After=network-online.target
+Wants=network-online.target postgresql.service
+After=network-online.target postgresql.service
 StartLimitIntervalSec=60s
 StartLimitBurst=5
 
@@ -12,7 +12,6 @@ Group=dao-coffee
 WorkingDirectory=/srv/dao-coffee/current
 Environment=NODE_ENV=production HOST=127.0.0.1 PORT=4322 TRUST_LOOPBACK_PROXY=1
 EnvironmentFile=/etc/dao-coffee/api.env
-Environment=LEADS_DB_PATH=/var/lib/dao-coffee/leads.sqlite
 StateDirectory=dao-coffee
 StateDirectoryMode=0700
 # Fail closed if an EnvironmentFile override exposes the API or changes runtime.

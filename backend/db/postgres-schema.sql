@@ -1,8 +1,4 @@
--- PROTOTYPE ONLY. Not loaded by the API and not a production migration.
--- Run only against a new, empty test database after explicitly selecting it:
---   psql -v ON_ERROR_STOP=1 "$DATABASE_URL" -f backend/db/postgres-schema.sql
--- No extensions, roles, databases, CRM objects, or network settings are created.
--- CREATE SCHEMA deliberately fails if this prototype already exists.
+-- PostgreSQL schema v1. Apply once to an empty, explicitly selected database.
 BEGIN;
 
 CREATE SCHEMA dao_website;
@@ -156,6 +152,11 @@ CREATE TABLE dao_website.dispatch_lock (
 );
 INSERT INTO dao_website.dispatch_lock (singleton) VALUES (1);
 
+CREATE TABLE dao_website.upstream_cooldown (
+  singleton smallint PRIMARY KEY CHECK(singleton=1),
+  blocked_until timestamptz NOT NULL
+);
+
 CREATE FUNCTION dao_website.guard_delivery_transition() RETURNS trigger
 LANGUAGE plpgsql AS $$
 BEGIN
@@ -189,5 +190,5 @@ FOR EACH ROW EXECUTE FUNCTION dao_website.guard_delivery_transition();
 COMMENT ON TABLE dao_website.crm_deliveries IS
   'A local delivery journal. Neither its unique indexes nor origin_id provide exactly-once delivery across PostgreSQL and Bitrix REST. Unknown remote writes must not be retried.';
 
-INSERT INTO dao_website.schema_migrations (version, name) VALUES (1, 'Unconnected PostgreSQL architecture prototype');
+INSERT INTO dao_website.schema_migrations (version, name) VALUES (1, 'Persistent inquiries and CRM delivery journal');
 COMMIT;
