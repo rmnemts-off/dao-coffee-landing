@@ -1,4 +1,4 @@
-// Context-specific, in-memory drafts. There is deliberately no submission transport.
+// Context-specific, in-memory drafts. CRM credentials stay on the server.
 (() => {
   const inlineForm = document.querySelector('#project-form');
   const dialog = document.querySelector('#project-dialog');
@@ -55,6 +55,64 @@
     }
   };
   const drafts = new Map();
+  const deliveries = new Map();
+  const intents = new Map();
+  const intentStorageKey = 'dao.lead-intents.v1';
+  const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  function storedIntents() {
+    try {
+      const saved = JSON.parse(sessionStorage.getItem(intentStorageKey) || '{}');
+      return saved && typeof saved === 'object' && !Array.isArray(saved) ? saved : {};
+    } catch { return {}; }
+  }
+  function persistIntents(saved) {
+    try {
+      if (Object.keys(saved).length) sessionStorage.setItem(intentStorageKey, JSON.stringify(saved));
+      else sessionStorage.removeItem(intentStorageKey);
+    } catch { /* Private/storage-restricted sessions keep the in-memory identity. */ }
+  }
+  function newIntentKey() {
+    if (typeof crypto.randomUUID === 'function') return crypto.randomUUID();
+    const bytes = crypto.getRandomValues(new Uint8Array(16));
+    bytes[6] = (bytes[6] & 15) | 64;
+    bytes[8] = (bytes[8] & 63) | 128;
+    const hex = [...bytes].map(byte => byte.toString(16).padStart(2, '0')).join('');
+    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+  }
+  async function intentFor(context, payload) {
+    // Inline and general modal are two views of the same submission. Source is
+    // metadata; the normalized data determines whether the visitor changed it.
+    const { source: _source, ...fields } = payload;
+    const identity = JSON.stringify({ ...fields, interests: [...fields.interests].sort(), model: fields.model?.trim() || null });
+    const previous = intents.get(context);
+    if (previous?.identity === identity) return previous;
+    const intent = { identity, key: newIntentKey() };
+    try {
+      const hash = async value => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value)))]
+        .map(byte => byte.toString(16).padStart(2, '0')).join('');
+      const [contextHash, fingerprint] = await Promise.all([hash(context), hash(identity)]);
+      const saved = storedIntents();
+      const record = saved[contextHash];
+      if (record?.fingerprint === fingerprint && uuidPattern.test(record.key)) intent.key = record.key;
+      intent.contextHash = contextHash;
+      // Never persist the draft, phone, name, comment, or an unhashed payload.
+      saved[contextHash] = { fingerprint, key: intent.key };
+      persistIntents(saved);
+    } catch { /* Without Web Crypto hashing, retain the key only in memory. */ }
+    intents.set(context, intent);
+    return intent;
+  }
+  function finishIntent(context, intent) {
+    if (intents.get(context) === intent) intents.delete(context);
+    if (intent.contextHash) {
+      const saved = storedIntents();
+      if (saved[intent.contextHash]?.key === intent.key) delete saved[intent.contextHash];
+      persistIntents(saved);
+    }
+  }
+  const lockedFields = new WeakMap();
+  const productIds = Object.fromEntries(Object.entries(directions).map(([id, label]) => [label, id]));
+  const unknownDelivery = 'Не удалось подтвердить доставку. Заявка могла дойти. Не отправляйте её повторно сразу; свяжитесь с нами по указанным на сайте контактам.';
   inlineForm.dataset.context = 'general';
   modalForm.dataset.context = 'general';
   let opener;
@@ -78,6 +136,52 @@
   function clearFeedback(form) {
     form.querySelector('.form-status').textContent = '';
     form.querySelectorAll('[aria-invalid]').forEach(field => field.removeAttribute('aria-invalid'));
+    renderDelivery(form);
+  }
+  function renderDelivery(form) {
+    const state = deliveries.get(form.dataset.context);
+    const pending = state?.pending === true;
+    const locked = lockedFields.get(form);
+    if (locked) {
+      for (const [field, disabled] of locked) field.disabled = disabled;
+      lockedFields.delete(form);
+    }
+    if (pending) {
+      const fields = [...form.querySelectorAll('input, textarea, select')];
+      lockedFields.set(form, fields.map(field => [field, field.disabled]));
+      for (const field of fields) field.disabled = true;
+    }
+    const button = form.querySelector('[type="submit"]');
+    button.disabled = pending;
+    button.textContent = pending ? 'Отправляем…' : 'Отправить заявку';
+    form.setAttribute('aria-busy', String(pending));
+    form.dataset.state = pending ? 'sending' : state?.state || 'ready';
+    if (state?.message) form.querySelector('.form-status').textContent = state.message;
+    if (state?.fieldErrors) showFieldErrors(form, state.fieldErrors, { focus: false });
+  }
+  function payloadFor(form) {
+    const product = productIds[form.elements.product.value] || null;
+    return {
+      schemaVersion: 1, name: form.elements.name.value.trim(),
+      phone: `+${form.elements.phone.value.replace(/\D/g, '')}`,
+      product, interests: product ? [] : [...form.querySelectorAll('[name="interests"]:checked')]
+        .map(field => field.value === 'Помогите определиться' ? 'undecided' : productIds[field.value]),
+      model: form.dataset.model || null, comment: form.elements.comment.value.trim(),
+      consent: form.elements.consent.checked,
+      source: form === inlineForm ? 'inline' : product ? 'brand-modal' : 'hero-modal',
+    };
+  }
+  function showFieldErrors(form, errors, { focus = true } = {}) {
+    const allowed = { name: form.elements.name, phone: form.elements.phone, consent: form.elements.consent,
+      comment: form.elements.comment, interests: form.querySelector('.product-field') };
+    let first;
+    for (const key of Object.keys(errors || {})) {
+      const field = Object.hasOwn(allowed, key) ? allowed[key] : null;
+      if (!field) continue;
+      field.setAttribute('aria-invalid', 'true');
+      first ||= key === 'interests' ? field.querySelector('input') : field;
+    }
+    if (focus) first?.focus();
   }
   function setModel(form, model = '') {
     form.dataset.model = model;
@@ -114,6 +218,7 @@
     modalForm.querySelector('.product-field').disabled = !!product;
     if (product) modalForm.elements.product.value = product;
     setModel(modalForm, model);
+    renderDelivery(modalForm);
   }
 
   document.querySelectorAll('[data-product]').forEach(trigger => {
@@ -246,11 +351,15 @@
   for (const form of forms) {
     attachPhoneMask(form.elements.phone);
     form.addEventListener('input', event => {
+      const state = deliveries.get(form.dataset.context);
+      if (!state?.pending) deliveries.delete(form.dataset.context);
       event.target.removeAttribute('aria-invalid');
       form.querySelector('.form-status').textContent = '';
       saveDraft(form);
+      renderDelivery(form);
     });
     form.addEventListener('change', event => {
+      if (!deliveries.get(form.dataset.context)?.pending) deliveries.delete(form.dataset.context);
       if (event.target.name === 'interests' && event.target.checked) {
         for (const field of form.querySelectorAll('[name="interests"]')) {
           if (field !== event.target && (event.target.value === 'Помогите определиться' || field.value === 'Помогите определиться')) field.checked = false;
@@ -260,8 +369,10 @@
       clearFeedback(form);
       saveDraft(form);
     });
-    form.addEventListener('submit', event => {
+    form.addEventListener('submit', async event => {
       event.preventDefault();
+      const context = form.dataset.context;
+      if (deliveries.get(context)?.pending) return;
       const nameValid = form.elements.name.value.trim().length >= 2;
       const phoneValid = /^7\d{10}$/.test(form.elements.phone.value.replace(/\D/g, ''));
       const interestGroup = form.querySelector('.product-field');
@@ -282,7 +393,51 @@
         invalid[0].focus();
         return;
       }
-      status.textContent = 'Заявка не отправлена: отправка ещё не подключена.';
+      saveDraft(form);
+      const payload = payloadFor(form);
+      const state = { pending: true, state: 'sending', message: 'Отправляем заявку…' };
+      deliveries.set(context, state);
+      for (const target of forms) if (target.dataset.context === context) renderDelivery(target);
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 20_000);
+      try {
+        const intent = await intentFor(context, payload);
+        const response = await fetch('/api/leads', {
+          method: 'POST', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': intent.key },
+          credentials: 'same-origin', signal: controller.signal, body: JSON.stringify(payload),
+        });
+        const result = await response.json();
+        if (response.status === 200 && result?.ok === true && typeof result.requestId === 'string' && result.requestId) {
+          finishIntent(context, intent);
+          state.state = 'success';
+          state.message = 'Заявка отправлена. Мы свяжемся с вами.';
+        } else {
+          state.state = 'error';
+          if (result?.ok !== false) state.message = unknownDelivery;
+          else if (response.status === 400 && result.code === 'VALIDATION_ERROR') {
+            state.message = 'Проверьте отмеченные поля. Заявка не отправлена.';
+            state.fieldErrors = result.fieldErrors;
+          } else if (response.status === 409 && result.code === 'IDEMPOTENCY_CONFLICT') {
+            state.message = 'Данные заявки изменились. Проверьте форму и отправьте ещё раз.';
+          } else if (response.status === 503 && result.code === 'DELIVERY_PENDING') {
+            state.message = 'Заявка ещё обрабатывается. Попробуйте проверить результат позже.';
+          } else if (response.status === 429) state.message = 'Слишком много попыток. Подождите минуту и попробуйте снова.';
+          else if (response.status === 413) state.message = 'Заявка слишком большая. Сократите текст и попробуйте снова.';
+          else if (result.code === 'DELIVERY_UNCERTAIN') state.message = unknownDelivery;
+          else if (['DELIVERY_FAILED', 'DELIVERY_UNAVAILABLE'].includes(result.code)) state.message = 'Отправить заявку сейчас не удалось. Попробуйте позже или свяжитесь с нами по контактам на сайте.';
+          else state.message = unknownDelivery;
+        }
+      } catch {
+        state.state = 'error';
+        state.message = unknownDelivery;
+      } finally {
+        clearTimeout(timer);
+        state.pending = false;
+        for (const target of forms) if (target.dataset.context === context) renderDelivery(target);
+        // A closed/reused modal must not steal focus or receive another context's errors.
+        const sourceVisible = form === inlineForm ? !dialog.open : dialog.open;
+        if (state.fieldErrors && form.dataset.context === context && sourceVisible) showFieldErrors(form, state.fieldErrors);
+      }
     });
     // Without JS, the inline submit remains disabled and cannot send a GET request.
     form.querySelector('[type="submit"]').disabled = false;

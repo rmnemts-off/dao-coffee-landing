@@ -1,0 +1,19 @@
+[Unit]
+Description=Renew DAO certificates with the IP-capable Certbot
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+# The timer already provides jitter; Certbot's extra sleep can exceed this timeout.
+ExecStart=/opt/dao-certbot/bin/certbot renew --quiet --no-random-sleep-on-renew
+TimeoutStartSec=180s
+UMask=0077
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+# nginx -t in the deploy hook opens the existing PID and log files for writing.
+ReadWritePaths=/etc/letsencrypt /var/lib/letsencrypt /var/log/letsencrypt /var/log/nginx -/run/nginx.pid
+MemoryMax=256M
+CPUQuota=50%

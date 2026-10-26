@@ -1,0 +1,26 @@
+# Replace __DAO_DOMAIN__ with the confirmed canonical public DNS name.
+# Enable this OR dao-https.conf.template, never both.
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    server_name _;
+    include /etc/nginx/snippets/dao-server-defaults.conf;
+    return 444;
+}
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name __DAO_DOMAIN__;
+    include /etc/nginx/snippets/dao-server-defaults.conf;
+    include /etc/nginx/snippets/dao-acme.conf;
+    include /etc/nginx/snippets/dao-private-locations.conf;
+
+    # Do not expose a form or accept lead data over plaintext HTTP.
+    location / {
+        default_type text/plain;
+        add_header Retry-After 300 always;
+        add_header X-Content-Type-Options nosniff always;
+        return 503 "HTTPS setup is in progress.\n";
+    }
+}

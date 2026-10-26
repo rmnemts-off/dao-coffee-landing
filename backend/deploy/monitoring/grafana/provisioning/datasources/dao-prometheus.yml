@@ -1,0 +1,13 @@
+apiVersion: 1
+datasources:
+  - name: DAO Prometheus
+    uid: dao-prometheus
+    type: prometheus
+    access: proxy
+    url: http://127.0.0.1:9090
+    isDefault: true
+    editable: false
+    version: 1
+    jsonData:
+      httpMethod: POST
+      timeInterval: 30s
