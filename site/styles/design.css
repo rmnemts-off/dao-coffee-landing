@@ -262,12 +262,25 @@ a:hover>.trail-link::after,a:focus-visible>.trail-link::after,
 .italian-piece .ceado-grinder{height:clamp(13rem,3.7rem + 16.8vw,28rem)}
 .section-xlvi-ceado .product-visual{padding-bottom:clamp(32px,1.5rem + 2vw,72px)}
 
-/* ---------- Equipment brief: open on the page, the items arrive one by one ---------- */
-.equipment-section{position:relative;padding-block:var(--section-pad);background:var(--sand)}
-.equipment-layout{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);align-items:stretch;gap:clamp(32px,4vw,104px)}
+/* ---------- Equipment brief: copy and arch share a row, materials span below ---------- */
+.equipment-section{--stage:color-mix(in srgb,var(--white) 55%,var(--cream));position:relative;padding-block:var(--section-pad);background:var(--sand)}
+.equipment-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"heading visual" "materials materials";align-items:stretch;column-gap:var(--column-gap);row-gap:clamp(32px,3.6vw,64px)}
+.equipment-heading{grid-area:heading;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding-block:clamp(12px,1.4vw,28px)}
 .equipment-heading h2{font-size:clamp(2.25rem,1.2rem + 2.8vw,4.5rem);line-height:1.06;letter-spacing:-.035em}
 .equipment-heading>p{max-width:44ch;margin-top:clamp(18px,1.6vw,28px);font:500 var(--fs-lead)/1.4 var(--heading);text-wrap:pretty}
 .equipment-action{margin-top:clamp(28px,2.4vw,44px)}
+.equipment-visual{align-self:stretch;min-height:clamp(26rem,34vw,38rem);padding-bottom:clamp(28px,2.5vw,48px)}
+.equipment-showcase{display:block;position:relative;isolation:isolate;width:100%;max-width:36rem;height:clamp(230px,28vw,380px);margin:0 auto;transform:translateX(4%)}
+.equipment-showcase::before{content:'';position:absolute;inset:auto 2% -2% 0;height:12%;background:radial-gradient(ellipse closest-side,rgb(25 62 50 / .12),transparent);pointer-events:none}
+.equipment-piece{position:absolute;display:block;line-height:0}
+.equipment-piece img{width:auto;height:100%;max-width:none;filter:var(--shadow-product);pointer-events:none;user-select:none;-webkit-user-select:none;-webkit-user-drag:none;transform-origin:50% 85%;transition:transform .6s var(--ease),filter .6s var(--ease)}
+.equipment-fridge{z-index:1;left:4%;bottom:4%;height:96%}
+.equipment-display{z-index:2;right:10%;bottom:6%;height:79%}
+.equipment-ice{z-index:3;left:27%;bottom:0;height:58%}
+.equipment-layout>.materials{grid-area:materials}
+@media(min-width:961px) and (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){
+  .equipment-piece:hover img{transform:translateY(-4px) scale(1.025)}
+}
 .materials{min-width:0;padding:clamp(20px,1.6vw,28px);background:var(--cream);border-radius:var(--radius-card)}
 .materials>h3{margin-bottom:16px;font-size:clamp(1.75rem,1.4rem + 1.1vw,2.5rem);line-height:1.1;letter-spacing:-.025em}
 .material-item{border-bottom:1px solid var(--line)}
@@ -367,7 +380,7 @@ a:hover>.trail-link::after,a:focus-visible>.trail-link::after,
 }
 
 /* ---------- Founder and enquiry form ---------- */
-.contact-section{position:relative;padding-block:var(--section-pad);background:var(--sage)}
+.contact-section{position:relative;padding-block:clamp(1.25rem,2vw,2.25rem) var(--section-pad);background:var(--sage)}
 .contact-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:var(--column-gap);align-items:stretch}
 .contact-layout>.contact-form{margin-inline:auto 0}
 .founder-profile{display:grid;grid-template-columns:minmax(0,1fr);gap:clamp(24px,2.4vw,44px);min-width:0;align-content:start}
@@ -523,9 +536,12 @@ a:hover>.trail-link::after,a:focus-visible>.trail-link::after,
   .hero-content{grid-template-columns:minmax(0,1fr);gap:clamp(20px,4vw,40px)}
   .hero-description{max-width:none}
   .hero-showcase{justify-self:center;max-width:36rem}
-  .equipment-layout{grid-template-columns:minmax(0,1fr)}
+  .equipment-layout{grid-template-columns:minmax(0,1fr);grid-template-areas:"heading" "visual" "materials"}
+  .equipment-heading{padding-block:0}
+  .equipment-showcase{height:clamp(180px,54vw,340px);max-width:34rem}
   .coffee-stack{--main-h:clamp(13rem,56vw,24rem)}
   .product-visual{--arch:clamp(5.5rem,24vw,10rem);width:100%;min-height:0;padding:clamp(36px,8vw,64px) clamp(16px,4vw,40px) clamp(40px,8vw,64px)}
+  .equipment-visual{padding-bottom:24px}
   .section-drinkx{--fit-h:clamp(16rem,72vw,30rem)}
   .section-coffee{--fit-h:clamp(15rem,66vw,28rem)}
   .section-wendougee,.section-linkbar{--fit-w:92%;--fit-h:none}
@@ -601,7 +617,7 @@ a:hover>.trail-link::after,a:focus-visible>.trail-link::after,
   body:not(.error-page){background-image:linear-gradient(180deg,var(--gray) 0%,var(--sage) 12%,var(--sand) 26%,var(--sage) 40%,var(--sand) 58%,var(--sage) 74%,var(--sand) 88%,var(--sage) 100%)}
   .hero,.product-section,.equipment-section,.contact-section,.site-footer{background:transparent}
   .topo-art::after,[data-spotlight]::before,.scratch-cover,.scratch-reveal{display:none}
-  .product-visual>img,.italian-piece img,.showcase-item img,.model-picture img,.coffee-stack .pack{transition:none}
+  .product-visual>img,.italian-piece img,.showcase-item img,.equipment-piece img,.model-picture img,.coffee-stack .pack{transition:none}
   .reveal{opacity:1;transform:none}
   .t-modal,.t-modal.is-open,.t-modal.is-closing{transform:none;will-change:opacity}
   .t-acc-panel-inner,.t-acc[data-open="true"] .t-acc-panel-inner{filter:none;transition:opacity var(--acc-expand) var(--acc-ease)}
