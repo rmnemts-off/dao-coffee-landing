@@ -262,14 +262,14 @@ a:hover>.trail-link::after,a:focus-visible>.trail-link::after,
 .italian-piece .ceado-grinder{height:clamp(13rem,3.7rem + 16.8vw,28rem)}
 .section-xlvi-ceado .product-visual{padding-bottom:clamp(32px,1.5rem + 2vw,72px)}
 
-/* ---------- Equipment brief: copy and materials left, the product arch right ---------- */
+/* ---------- Equipment brief: copy and arch share a row, materials span below ---------- */
 .equipment-section{--stage:color-mix(in srgb,var(--cream) 76%,var(--sage));position:relative;padding-block:var(--section-pad);background:var(--sand)}
-.equipment-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"heading visual" "materials visual";align-items:start;column-gap:var(--column-gap);row-gap:clamp(28px,2.4vw,44px)}
-.equipment-heading{grid-area:heading}
+.equipment-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"heading visual" "materials materials";align-items:stretch;column-gap:var(--column-gap);row-gap:clamp(32px,3.6vw,64px)}
+.equipment-heading{grid-area:heading;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding-block:clamp(12px,1.4vw,28px)}
 .equipment-heading h2{font-size:clamp(2.25rem,1.2rem + 2.8vw,4.5rem);line-height:1.06;letter-spacing:-.035em}
 .equipment-heading>p{max-width:44ch;margin-top:clamp(18px,1.6vw,28px);font:500 var(--fs-lead)/1.4 var(--heading);text-wrap:pretty}
 .equipment-action{margin-top:clamp(28px,2.4vw,44px)}
-.equipment-visual{align-self:start;min-height:clamp(30rem,42vw,48rem)}
+.equipment-visual{align-self:stretch;min-height:clamp(26rem,34vw,38rem);padding-bottom:clamp(28px,2.5vw,48px)}
 .equipment-showcase{display:block;position:relative;isolation:isolate;width:100%;max-width:36rem;height:clamp(230px,28vw,380px);margin:0 auto}
 .equipment-showcase::before{content:'';position:absolute;inset:auto 2% -2% 0;height:12%;background:radial-gradient(ellipse closest-side,rgb(25 62 50 / .12),transparent);pointer-events:none}
 .equipment-piece{position:absolute;display:block;line-height:0}
@@ -537,9 +537,11 @@ a:hover>.trail-link::after,a:focus-visible>.trail-link::after,
   .hero-description{max-width:none}
   .hero-showcase{justify-self:center;max-width:36rem}
   .equipment-layout{grid-template-columns:minmax(0,1fr);grid-template-areas:"heading" "visual" "materials"}
+  .equipment-heading{padding-block:0}
   .equipment-showcase{height:clamp(180px,54vw,340px);max-width:34rem}
   .coffee-stack{--main-h:clamp(13rem,56vw,24rem)}
   .product-visual{--arch:clamp(5.5rem,24vw,10rem);width:100%;min-height:0;padding:clamp(36px,8vw,64px) clamp(16px,4vw,40px) clamp(40px,8vw,64px)}
+  .equipment-visual{padding-bottom:24px}
   .section-drinkx{--fit-h:clamp(16rem,72vw,30rem)}
   .section-coffee{--fit-h:clamp(15rem,66vw,28rem)}
   .section-wendougee,.section-linkbar{--fit-w:92%;--fit-h:none}
