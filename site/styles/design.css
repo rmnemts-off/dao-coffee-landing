@@ -270,7 +270,7 @@ a:hover>.trail-link::after,a:focus-visible>.trail-link::after,
 .equipment-heading>p{max-width:44ch;margin-top:clamp(18px,1.6vw,28px);font:500 var(--fs-lead)/1.4 var(--heading);text-wrap:pretty}
 .equipment-action{margin-top:clamp(28px,2.4vw,44px)}
 .equipment-visual{align-self:stretch;min-height:clamp(26rem,34vw,38rem);padding-bottom:clamp(28px,2.5vw,48px)}
-.equipment-showcase{display:block;position:relative;isolation:isolate;width:100%;max-width:36rem;height:clamp(230px,28vw,380px);margin:0 auto}
+.equipment-showcase{display:block;position:relative;isolation:isolate;width:100%;max-width:36rem;height:clamp(230px,28vw,380px);margin:0 auto;transform:translateX(4%)}
 .equipment-showcase::before{content:'';position:absolute;inset:auto 2% -2% 0;height:12%;background:radial-gradient(ellipse closest-side,rgb(25 62 50 / .12),transparent);pointer-events:none}
 .equipment-piece{position:absolute;display:block;line-height:0}
 .equipment-piece img{width:auto;height:100%;max-width:none;filter:var(--shadow-product);pointer-events:none;user-select:none;-webkit-user-select:none;-webkit-user-drag:none;transform-origin:50% 85%;transition:transform .6s var(--ease),filter .6s var(--ease)}
