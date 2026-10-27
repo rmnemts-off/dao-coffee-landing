@@ -263,7 +263,7 @@ a:hover>.trail-link::after,a:focus-visible>.trail-link::after,
 .section-xlvi-ceado .product-visual{padding-bottom:clamp(32px,1.5rem + 2vw,72px)}
 
 /* ---------- Equipment brief: copy and arch share a row, materials span below ---------- */
-.equipment-section{--stage:color-mix(in srgb,var(--cream) 76%,var(--sage));position:relative;padding-block:var(--section-pad);background:var(--sand)}
+.equipment-section{--stage:color-mix(in srgb,var(--white) 55%,var(--cream));position:relative;padding-block:var(--section-pad);background:var(--sand)}
 .equipment-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"heading visual" "materials materials";align-items:stretch;column-gap:var(--column-gap);row-gap:clamp(32px,3.6vw,64px)}
 .equipment-heading{grid-area:heading;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding-block:clamp(12px,1.4vw,28px)}
 .equipment-heading h2{font-size:clamp(2.25rem,1.2rem + 2.8vw,4.5rem);line-height:1.06;letter-spacing:-.035em}
@@ -380,7 +380,7 @@ a:hover>.trail-link::after,a:focus-visible>.trail-link::after,
 }
 
 /* ---------- Founder and enquiry form ---------- */
-.contact-section{position:relative;padding-block:var(--section-pad);background:var(--sage)}
+.contact-section{position:relative;padding-block:clamp(1.25rem,2vw,2.25rem) var(--section-pad);background:var(--sage)}
 .contact-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:var(--column-gap);align-items:stretch}
 .contact-layout>.contact-form{margin-inline:auto 0}
 .founder-profile{display:grid;grid-template-columns:minmax(0,1fr);gap:clamp(24px,2.4vw,44px);min-width:0;align-content:start}
